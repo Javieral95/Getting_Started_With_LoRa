@@ -9,16 +9,16 @@
 import machine
 import ubinascii
 
-#WIFI_MAC = ubinascii.hexlify(machine.unique_id()).upper() #TTN
-WIFI_MAC = ubinascii.hexlify(machine.unique_id()) #Chirpstark
+WIFI_MAC = ubinascii.hexlify(machine.unique_id()).upper() #TTN
+#WIFI_MAC = ubinascii.hexlify(machine.unique_id()) #Chirpstark
 
 # Set  the Gateway ID to be the first 3 bytes of MAC address + 'FFFE' + last 3 bytes of MAC address
 #GATEWAY_ID = WIFI_MAC[:6] + "FFFE" + WIFI_MAC[6:12] #TTN
-#GATEWAY_ID = WIFI_MAC[:6] + "FFFF" + WIFI_MAC[6:12] #TTN
-GATEWAY_ID = WIFI_MAC[:6] + "ffff" + WIFI_MAC[6:12] #Chirpstark
+GATEWAY_ID = WIFI_MAC[:6] + "FFFF" + WIFI_MAC[6:12] #TTN
+#GATEWAY_ID = WIFI_MAC[:6] + "ffff" + WIFI_MAC[6:12] #Chirpstark
 #The Things of Network (V > 3): 'eu1.cloud.thethings.network'
 #Chirpstark: 'loraserver.pycom.io' #(O lo que proceda)
-SERVER = 'loraserver.pycom.io'
+SERVER = 'eu1.cloud.thethings.network'
 
 PORT = 1700
 
