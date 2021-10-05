@@ -12,12 +12,9 @@
 
 #include <Time.h>
 #include <Wire.h>
+#include <Adafruit_AM2315.h> //Sensor
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-
-#include <lmic.h>
-#include <hal/hal.h>
-#include <SPI.h>
 
 /* - - Defines - - */
 #define MONITOR_SPEED 115200
@@ -25,6 +22,10 @@
 //AM2315 Sensor, Warning: maybe need resistence
 #define AM2315_SENSOR_SDA 21 //Yellow wire
 #define AM2315_SENSOR_SCL 22 //White wire
+struct am2315_readedData{
+    float temp;
+    float hum;
+};
 
 //Lora PINs (See Pinout diagrams)
 #define LORA_CS 18
@@ -43,10 +44,8 @@
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels //128x(64)
 
 /* - - Functions - - */
-void initLoraTransceiver();
-void initLoraCommunication();
 void initSerialMonitor();
-void initTempSensor();
-void do_send(osjob_t *);
+void initAM2315();
+am2315_readedData readAM2315Data();
 
 #endif

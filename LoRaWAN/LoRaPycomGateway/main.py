@@ -32,7 +32,7 @@ from nanogateway import NanoGateway
 #=======================
 ENABLE_WIFI = True
 
-LOOP_INTERVAL = 0.6
+LOOP_INTERVAL = 1
 
 
 #=======================
@@ -96,10 +96,12 @@ def init_loraWAN_gateway():
         ntp_server=config.NTP,
         ntp_period=config.NTP_PERIOD_S
         )
-    print("Ok! Now you have a LoRaWAN Gateway!")
+    print("Ok! Now you have a LoRaWAN Gateway! Lets start it, wait . . .")
+    pycom.rgbled(0xAA0000)
     nanogw.start()
-    nanogw._log('You may now press ENTER to enter the REPL')
-    input()
+    nanogw._log('. . . Yeah! Nano gateway is connected and running, enjoy the log:')
+    pycom.rgbled(0x000000)
+    #input()
 
 #Data
 def post_data_to_db(acceleration, pitch, roll, coord):
@@ -125,6 +127,7 @@ def post_data_to_db(acceleration, pitch, roll, coord):
 
 #Others (It isnt important for LoRa)
 def wait_next_loop():
+    pycom.rgbled(0x00FF00)
     time.sleep(LOOP_INTERVAL / 2)
     pycom.rgbled(0x000000)
     time.sleep(LOOP_INTERVAL / 2)

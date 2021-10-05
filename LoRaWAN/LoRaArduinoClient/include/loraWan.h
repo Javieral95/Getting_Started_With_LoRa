@@ -5,16 +5,16 @@
  */
 
 #include "hal.h"
+#include <lmic.h>
+#include <hal/hal.h>
+#include <SPI.h>
 
-#define LORAWAN_FRECUENCY 868E6
-#define LORA_SYNC_WORD 0xF3
+/* DEFINES, don't worry nobody used this values */
+//#define LORAWAN_FRECUENCY 868E6
+//#define LORA_SYNC_WORD 0xF3
 
-void initLoraWANTransceiver();
-void initLoraWANCommunication();
-
-
-void onEvent();
+/* FUNCTIONS */
+void printHex2(unsigned);
+void onEvent(ev_t ev);
+void LoraWan_startJob();
 void do_send(osjob_t *);
-//void LoRa_txMode();
-//void LoRa_rxMode();
-//void LoRa_sendMessage(String);

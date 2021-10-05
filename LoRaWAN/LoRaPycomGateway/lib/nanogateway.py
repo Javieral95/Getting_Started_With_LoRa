@@ -216,7 +216,8 @@ class NanoGateway:
     def _connect_to_wifi(self):
         self.wlan.connect(self.ssid, auth=(None, self.password))
         while not self.wlan.isconnected():
-            utime.sleep_ms(50)
+            utime.sleep_ms(200)
+            print(".", end = '')
         self._log('WiFi connected to: {}', self.ssid)
 
     def _dr_to_sf(self, dr):

@@ -5,31 +5,34 @@
 
 #include "hal.h"
 
-//Objects
-//OneWire oneWireSensor(SENSOR_PIN);
-//DallasTemperature tempSensor(&oneWireSensor);
-/*
-void initLoraTransceiver(){
-    Serial.println("Setting LoRa Pins . . .");
-    LoRa.setPins(LORA_CS, LORA_RST, LORA_DIO0);
+/** Objects: **/
+Adafruit_AM2315 am2315;
+
+/** Functions **/
+
+void initAM2315()
+{
+    if (am2315.begin())
+        Serial.println("Sensor AM2315 init succesfully!");
+    else
+        Serial.println("Sensor AM2315 not found, check wiring & pullups!");
 }
 
-void initLoraCommunication(){
-    Serial.println("Try to connect LoraWAN:");
-    while(!LoRa.begin(LORAWAN_FRECUENCY)){
-        Serial.print(". ");
-        delay(500);
-    }
-    //LoRa.setSyncWord(LORA_SYNC_WORD); // The sync word assures you don't get LoRa messages from other LoRa transceivers ranges from 0-0xFF
-    Serial.println("LoRa connect succesfully!");
+am2315_readedData readAM2315Data()
+{
+    float temperature = -1000;
+    float humidity = -1000;
+    am2315_readedData ret;
+
+    if (!am2315.readTemperatureAndHumidity(&temperature, &humidity))
+        Serial.println("Failed to read data from AM2315 or don't have sensor!, send -1000 in both values");
+
+    ret.temp = temperature;
+    ret.hum = humidity;
+    return ret;
 }
 
-void initSerialMonitor(){
+void initSerialMonitor()
+{
     Serial.begin(MONITOR_SPEED);
 }
-
-void initTempSensor()
-{
-    
-}
-*/
