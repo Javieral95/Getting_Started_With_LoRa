@@ -10,7 +10,7 @@ import machine
 import ubinascii
 
 #### TTS OR CHIRPSTARK SETTINGS #####
-# Set  the Gateway ID to be the first 3 bytes of MAC address + 'FFFE' + last 3 bytes of MAC address
+# Set  the Gateway ID to be the first 3 bytes of MAC address + 'FFFF' + last 3 bytes of MAC address
 
 ## FOR THE THINGS NETWORK (TTS) ##
 #WIFI_MAC = ubinascii.hexlify(machine.unique_id()).upper()

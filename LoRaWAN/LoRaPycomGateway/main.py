@@ -127,7 +127,7 @@ def post_data_to_db(acceleration, pitch, roll, coord):
 
 #Others (It isnt important for LoRa)
 def wait_next_loop():
-    pycom.rgbled(0x00FF00)
+    pycom.rgbled(0x00AA00)
     time.sleep(LOOP_INTERVAL / 2)
     pycom.rgbled(0x000000)
     time.sleep(LOOP_INTERVAL / 2)
@@ -149,8 +149,8 @@ def main():
 
     init_loraWAN_gateway()
 
-    #while True:
-    #    wait_next_loop()
+    while True:
+        wait_next_loop()
     #    print_separator()
 
 #END MAIN & CALL

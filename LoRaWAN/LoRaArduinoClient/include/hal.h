@@ -19,7 +19,7 @@
 /* - - Defines - - */
 #define MONITOR_SPEED 115200
 
-//AM2315 Sensor, Warning: maybe need resistence
+//AM2315 Sensor, Warning: need two resistances from SDA and SCL to VIN (5V)
 #define AM2315_SENSOR_SDA 21 //Yellow wire
 #define AM2315_SENSOR_SCL 22 //White wire
 struct am2315_readedData{

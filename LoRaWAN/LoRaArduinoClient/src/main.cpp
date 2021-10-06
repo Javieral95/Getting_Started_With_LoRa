@@ -1,7 +1,7 @@
 /*
  * Main file to read config and run the loop.
  * Run a Arduino Node for LoRaWAN using OTAA and a service (TTS or Chipstark)
- * Change pins in hal.h and Lora config in loraWan.h
+ * Configure pinmap in hal.h and Lora config in loraWan.h
  * CTIC - LoRa Test
  */
 
@@ -15,7 +15,7 @@ void setup()
     //AM2315 sensor init
     initAM2315();
 
-    // Start job (sending automatically starts OTAA too)
+    // Start job (sending automatically, starts OTAA too)
     LoraWan_startJob();
 }
 
