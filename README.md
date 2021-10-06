@@ -8,7 +8,7 @@ El presente proyecto busca realizar una pequeña prueba de concepto de la tecnol
 
 LoRa es una técnología inalambrica (como puede ser WiFi, Bluetooth, LTE, SigFox o Zigbee) que emplea un tipo de modulacion en radiofrecuencia patentada por [Semtech](https://www.semtech.com/).
 
-Actualmente la tecnología esta administrada por la [LoRa Alliance](https://lora-alliance.org/) que certifica a todo fabricanete Hardware que busque trabajar con dicha tecnología.
+Actualmente la tecnología esta administrada por la [LoRa Alliance](https://lora-alliance.org/) que certifica a todo fabricante Hardware que busque trabajar con dicha tecnología.
 
 LoRa tiene una **alta tolerancia a las interferencias**, una alta sensibilidad para recibir datos (-168db), un **MUY bajo consumo** (el dispositivo puede durar una decada con una sola bateria) y un **alcance de 10 a 20km** (dependiendo de si se dispone de visión directa o de la topologia del terreno). Por otro lado, nos encontramos una **muy baja transferencia de datos** (hasta 255 bytes).
 
@@ -68,7 +68,7 @@ Para el uso de estos ejemplos (que resultan funcionales haciendo uso de un dispo
 
 Existen dos tipos de autenticación en LoRaWAN:
 * **ABP**: "Activation by Personalization", se hardcodea tanto la dirección del dispositivo como las claves de seguridad de este. Es más simple por prescindir del paso previo de autenticación, pero no es seguro.
-* **OTAA**: "Over-The-Air Activation", es el metodo seguro de conectarse con el servidor. El dispositivo en primer lugar realiza una operación de autenticación en la red (la petición pasa por el gateway), la dirección del dispositivo es dinamica y las claves de seguridad se negocian con el dispositivo.
+* **OTAA**: "Over-The-Air Activation", es el metodo seguro de conectarse con el servidor. El dispositivo en primer lugar realiza una operación de autenticación en la red (la petición pasa por el gateway), la dirección del dispositivo es dinámica y las claves de seguridad se negocian con el dispositivo.
 
 _*En los ejemplos por el momento solo se hace uso de OTAA._
 
@@ -158,7 +158,7 @@ Puedes dejar el resto de valores por defecto.
 
 #### **Payload:**
 
-Para poder leer los datos que ha enviado el nodo al servidor se necesita descodificar el payload, en el caso de Chirpstack lo haremos para cada perfil de dispositivo, en el apartado Device Profiles_ accedemos al perfil que nos interesa (en este caso OTAA) y accedemos a la pestaña _Codec_. En este caso como solo mandamos un hola mundo tenemos la siguiente funcion:
+Para poder leer los datos que ha enviado el nodo al servidor se necesita descodificar el payload, en el caso de Chirpstack lo haremos para cada perfil de dispositivo, en el apartado Device Profiles_ accedemos al perfil que nos interesa (en este caso OTAA) y accedemos a la pestaña _Codec_. En este caso como solo mandamos un "hola mundo" tenemos la siguiente funcion:
 ```
 function Decode(bytes, port) {
   // Decode plain text; for testing only 
@@ -190,7 +190,7 @@ Se ha hecho uso de la librería [_NanoGateway py_](https://pycom.io/lopy-lorawan
 
 En el archivo Config se encuentra todo lo necesario para personalizar el gateway:
 
-* En las primeras lineas deberás descomentar las correspondientes al servicio que usarás (The Things network o Chirpstark), a continuación las lines de código de la segunda opción (fijese como para cumplir el formato de Gateway EUI de los servidores se debe rellenar el ID de forma que los seis primeros y los seis ultimos digitos pertenezcan a la MAC del dispositivo, pero los restantes se rellena con Fs).
+* En las primeras lineas deberás descomentar las correspondientes al servicio que usarás (The Things network o Chirpstark), a continuación las lines de código de la segunda opción (fijese como para cumplir el formato de Gateway EUI de los servidores, se debe rellenar el ID de forma que los seis primeros y los seis ultimos digitos pertenezcan a la MAC del dispositivo, pero los restantes se rellena con Fs).
 
 ```
 WIFI_MAC = ubinascii.hexlify(machine.unique_id()) #Debería pasarse a mayusculas para TTS
@@ -198,7 +198,7 @@ SERVER = 'loraserver.pycom.io' #(or url of your server)
 GATEWAY_ID = WIFI_MAC[:6] + "ffff" + WIFI_MAC[6:12] #Minusculas: Por ser chirpstarck
 ```
 * El puerto puede mantenerse en _1700_, es el que usan ambos servicios.
-* Tras ello, se configura el servidorp ara el reloj, la red WiFi (junto con el Timeout para determinar el error) como la frecuencia de trabajo (en este caso la europea: 865Mhz).
+* Tras ello, se configura el servidor para el reloj, la red WiFi (junto con el Timeout para determinar el error) como la frecuencia de trabajo (en este caso la europea: 865Mhz).
 
 ```
 NTP = "pool.ntp.org"
@@ -249,6 +249,8 @@ def init_loraWAN_gateway():
 La Pycom mantendra la luz roja hasta que consiga conectarse, una vez escuche peticiones de dispositivos parpadeará su led en color verde.
 
 ## Arduino End-device
+
+Se encuentra en _LoRaWAN/LoRaArduinoClient_.
 
 ### Libreria
 
@@ -314,4 +316,4 @@ Esto no quita que esta técnología pueda _pegar fuerte_ debido a no depender de
 
 ## Licencia 📄
 
-Este proyecto ha sido realizado para la Fundación CTIC, su uso es libre y no es necesarío ningún crédito en su uso.
+Este proyecto ha sido realizado para la Fundación CTIC, su uso es libre y no es necesarío ningún crédito en su uso (Revisar las licencias de las librerias utilizadas).
