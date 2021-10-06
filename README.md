@@ -8,7 +8,7 @@ El presente proyecto busca realizar una pequeña prueba de concepto de la tecnol
 
 LoRa es una técnología inalambrica (como puede ser WiFi, Bluetooth, LTE, SigFox o Zigbee) que emplea un tipo de modulacion en radiofrecuencia patentada por [Semtech](https://www.semtech.com/).
 
-Actualmente la tecnología esta administrada por la [LoRa Alliance](https://lora-alliance.org/) que certifica a todo fabricante Hardware que busque trabajar con dicha tecnología.
+Actualmente la tecnología esta administrada por la [LoRa Alliance](https://lora-alliance.org/) que certifica a todo fabricanete Hardware que busque trabajar con dicha tecnología.
 
 LoRa tiene una **alta tolerancia a las interferencias**, una alta sensibilidad para recibir datos (-168db), un **MUY bajo consumo** (el dispositivo puede durar una decada con una sola bateria) y un **alcance de 10 a 20km** (dependiendo de si se dispone de visión directa o de la topologia del terreno). Por otro lado, nos encontramos una **muy baja transferencia de datos** (hasta 255 bytes).
 
@@ -24,6 +24,13 @@ Podemos comunicar a los dispositivos mediante LoRaMAC (también conocido mediant
 
 * **LoRaWAN**: Utilizado para comunicar una red de dispositivos. En este enfoque aparece la figura del Gateway (dispositivo que recoge la información de uno o varios dispositivos y la reenvía al servidor). En LoRaWAN la información debe ir filtrada para conocer que dispositivos debe escuchar el Gateway y cuales ignorar, pero esto se verá más adelante.
 Este enfoque utiliza una topología en estrella.
+
+Por otro lado, en **LoRaWAN**, también se tienen **tres tipos de dispositivos finales o nodos**:
+* De clase **A**: La más soportada y la que supone mayor ahorro de energia (el dispositivo pasa a modo escuchar o Ventana RX después de enviar datos al gateway), esto hace que solo pueda escuchar algo después de enviar información: Utiles para enviar información en intervalos separados de tiempo o cuando se reciba un evento (Ej: La temperatura bajo de 21º).
+* De clase **B**: Tiene soporte para recibir paquetes del gateway, permite más espacios entre los ascendentes (enviados) y descendentes (recibidos). Se reduce la latencia de mensajes pero consume más energia.
+* De clase **C**: Se dispone de recepción de paquetes continua, el dispositivo solo deja de escuchar en el momento que envía alguna información.
+
+_*En los ejemplos solo se tiene soporte para nodos de clase A y B (soportados por la libreria utilizada), pero solo se implementa el de tipo A._
 
 ## Pre-requisitos 📋
 
@@ -68,7 +75,7 @@ Para el uso de estos ejemplos (que resultan funcionales haciendo uso de un dispo
 
 Existen dos tipos de autenticación en LoRaWAN:
 * **ABP**: "Activation by Personalization", se hardcodea tanto la dirección del dispositivo como las claves de seguridad de este. Es más simple por prescindir del paso previo de autenticación, pero no es seguro.
-* **OTAA**: "Over-The-Air Activation", es el metodo seguro de conectarse con el servidor. El dispositivo en primer lugar realiza una operación de autenticación en la red (la petición pasa por el gateway), la dirección del dispositivo es dinámica y las claves de seguridad se negocian con el dispositivo.
+* **OTAA**: "Over-The-Air Activation", es el metodo seguro de conectarse con el servidor. El dispositivo en primer lugar realiza una operación de autenticación en la red (la petición pasa por el gateway), la dirección del dispositivo es dinamica y las claves de seguridad se negocian con el dispositivo.
 
 _*En los ejemplos por el momento solo se hace uso de OTAA._
 
@@ -158,7 +165,7 @@ Puedes dejar el resto de valores por defecto.
 
 #### **Payload:**
 
-Para poder leer los datos que ha enviado el nodo al servidor se necesita descodificar el payload, en el caso de Chirpstack lo haremos para cada perfil de dispositivo, en el apartado Device Profiles_ accedemos al perfil que nos interesa (en este caso OTAA) y accedemos a la pestaña _Codec_. En este caso como solo mandamos un "hola mundo" tenemos la siguiente funcion:
+Para poder leer los datos que ha enviado el nodo al servidor se necesita descodificar el payload, en el caso de Chirpstack lo haremos para cada perfil de dispositivo, en el apartado Device Profiles_ accedemos al perfil que nos interesa (en este caso OTAA) y accedemos a la pestaña _Codec_. En este caso como solo mandamos un hola mundo tenemos la siguiente funcion:
 ```
 function Decode(bytes, port) {
   // Decode plain text; for testing only 
@@ -190,7 +197,7 @@ Se ha hecho uso de la librería [_NanoGateway py_](https://pycom.io/lopy-lorawan
 
 En el archivo Config se encuentra todo lo necesario para personalizar el gateway:
 
-* En las primeras lineas deberás descomentar las correspondientes al servicio que usarás (The Things network o Chirpstark), a continuación las lines de código de la segunda opción (fijese como para cumplir el formato de Gateway EUI de los servidores, se debe rellenar el ID de forma que los seis primeros y los seis ultimos digitos pertenezcan a la MAC del dispositivo, pero los restantes se rellena con Fs).
+* En las primeras lineas deberás descomentar las correspondientes al servicio que usarás (The Things network o Chirpstark), a continuación las lines de código de la segunda opción (fijese como para cumplir el formato de Gateway EUI de los servidores se debe rellenar el ID de forma que los seis primeros y los seis ultimos digitos pertenezcan a la MAC del dispositivo, pero los restantes se rellena con Fs).
 
 ```
 WIFI_MAC = ubinascii.hexlify(machine.unique_id()) #Debería pasarse a mayusculas para TTS
@@ -198,7 +205,7 @@ SERVER = 'loraserver.pycom.io' #(or url of your server)
 GATEWAY_ID = WIFI_MAC[:6] + "ffff" + WIFI_MAC[6:12] #Minusculas: Por ser chirpstarck
 ```
 * El puerto puede mantenerse en _1700_, es el que usan ambos servicios.
-* Tras ello, se configura el servidor para el reloj, la red WiFi (junto con el Timeout para determinar el error) como la frecuencia de trabajo (en este caso la europea: 865Mhz).
+* Tras ello, se configura el servidorp ara el reloj, la red WiFi (junto con el Timeout para determinar el error) como la frecuencia de trabajo (en este caso la europea: 865Mhz).
 
 ```
 NTP = "pool.ntp.org"
@@ -250,8 +257,6 @@ La Pycom mantendra la luz roja hasta que consiga conectarse, una vez escuche pet
 
 ## Arduino End-device
 
-Se encuentra en _LoRaWAN/LoRaArduinoClient_.
-
 ### Libreria
 
 Se ha hecho uso de la librería [_MCCI Arduino LoRaWAN_](https://github.com/mcci-catena/arduino-lorawan) que permite abstraerse de muchos aspectos de comunicación LoRa. Ha sido instalada mediante el gestor de librerias de PlatformIO.
@@ -281,7 +286,23 @@ Tan solo copia el proyecto a tu placa Arduino.
 
 La librería funciona mediante eventos, en este caso los más importantes serán el de autenticación (cuando se complete verás las claves) y el de envío de datos.
 
-El evento en el que se envia datos será _EV_TXCOMPLETE_ en la funcion _void onEvent(ev_t ev)_. La función donde se detallará que datos se envían es:
+El evento en el que se envia datos será _EV_TXCOMPLETE_ en la funcion _void onEvent(ev_t ev)_, observar que el evento incluye la "Ventana RX", momento en el que el dispositivo escucha.
+```
+    case EV_TXCOMPLETE:
+        Serial.println(F("EV_TXCOMPLETE (includes waiting for RX windows)"));
+        if (LMIC.txrxFlags & TXRX_ACK)
+            Serial.println(F("Received ack"));
+        if (LMIC.dataLen)
+        {
+            Serial.print(F("Received "));
+            Serial.print(LMIC.dataLen);
+            Serial.println(F(" bytes of payload"));
+        }
+        // Schedule next transmission
+        os_setTimedCallback(&sendjob, os_getTime() + sec2osticks(TX_INTERVAL), do_send);
+        break;
+```
+La función donde se detallará que datos se envían es:
 ```
 void do_send(osjob_t *j)
 {
@@ -300,7 +321,7 @@ void do_send(osjob_t *j)
 ```
 # Problemática
 
-Como bien se sabe, la tasa de transferencia de LoRA es muy baja, lo que provoca una gran perdida de paquetes y una enorme latencia cuando se envía información (en estos ejemplo se envia cada minuto y se visualiza esta perdida), lo que junto a la escasa documentación por ser una nueva técnologia hace que sea algo tediosa trabajar consigo.
+Como bien se sabe, la tasa de transferencia de LoRA es muy baja, lo que provoca una gran perdida de paquetes y una enorme latencia cuando se envía información (en estos ejemplo se envia cada minuto y se visualiza esta perdida), lo que junto a la escasa documentación por ser una nueva técnologia hace que sea algo tediosa trabajar con ella.
 
 Algunos expertos indican que es necesario cierta distancia entre los dispositivos (30m y preferiblemente algún obstaculo entre ellos) para que la comunicación sea más fluida. No ha sido probado y solo se ha lanzado con las dos tarjetas una cerca de la otra en la misma mesa.
 
@@ -316,4 +337,4 @@ Esto no quita que esta técnología pueda _pegar fuerte_ debido a no depender de
 
 ## Licencia 📄
 
-Este proyecto ha sido realizado para la Fundación CTIC, su uso es libre y no es necesarío ningún crédito en su uso (Revisar las licencias de las librerias utilizadas).
+Este proyecto ha sido realizado para la Fundación CTIC, su uso es libre y no es necesarío ningún crédito en su uso.
