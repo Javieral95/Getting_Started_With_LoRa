@@ -191,7 +191,7 @@ Para poder leer los datos que ha enviado el nodo al servidor se necesita descodi
 function Decode(fPort, bytes) {
 
     var tempObj = new Object();
-  	tempObj.data=bytes;
+  	 tempObj.data=bytes;
     tempObj.decodedData = String.fromCharCode.apply(null, bytes);
     tempObj.message = "Informacion recibida del nodo";
     return tempObj;
