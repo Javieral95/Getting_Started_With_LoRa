@@ -136,6 +136,7 @@ class NanoGateway:
         """
 
         self._log('Starting LoRaWAN nano gateway with id: {}', self.id)
+        self._log('Connecting to WiFi with SSID: {}', self.ssid)
 
         # setup WiFi as a station and connect
         self.wlan = WLAN(mode=WLAN.STA)

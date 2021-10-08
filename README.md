@@ -2,6 +2,22 @@
 
 El presente proyecto busca realizar una pequeña prueba de concepto de la tecnologia de transmisión LoRa para recabar información que podrá ser usada por la [Fundación CTIC](https://www.fundacionctic.org/es/home). Se enviará información desde un dispositivo final (Nodo o cliente), esta información será recogida por un dispositivo Gateway y este, a su vez, la reenviará a un servidor para almacenarla.
 
+## Tabla de contenido
+- [Comenzando](##Comenzando)
+- [Pre-requisitos](##Pre-requisitos)
+- [LoRaMAC](#LoRaMAC)
+- [LoRaWAN](#LoRaWAN)
+  * [Servidor](##Servidor) 
+    * [The Things Network](###TheThingsNetwork)
+    * [ChirpStack (LoRa Server)](###Chirpstack(LoRaServer))
+    * [ChirpStack privado en local](###LanzarServidorChirpstackPrivadoEnLocal)
+  * [PyCom Gateway](##PycomGateway)
+  * [Arduino End-Device](##ArduinoEnd-device)
+  * [Problemática](#Problemática)
+  * [Fin](#Fin)
+
+_________________
+
 ## Comenzando 
 
 ### Primero un poco de información acerca de LoRa 📄
@@ -31,7 +47,7 @@ Por otro lado, en **LoRaWAN**, también se tienen **tres tipos de dispositivos f
 * De clase **C**: Se dispone de recepción de paquetes continua, el dispositivo solo deja de escuchar en el momento que envía alguna información.
 
 _*En los ejemplos solo se tiene soporte para nodos de clase A y B (soportados por la libreria utilizada), pero solo se implementa el de tipo A._
-
+_____________________________________
 ## Pre-requisitos 📋
 
 Se precisa de **minimo dos dispositivos** (una para el nodo y otro para el gateway, que debe tener además conectividad WiFi) y de una cuenta asociada en TTS (**The Things Network**) o **Chirpstack** (pudiendo usar un servidor propio en local).
@@ -54,22 +70,27 @@ _Y después subir los proyectos pertinentes a los dispositivos_
 
 ### Los dispositivos utilizados 🛠️
 
-* El dispositivo Arduino se trata de una placa WiFi LoRa 32 que emula a la placa Heltec WiFi LoRa 32 (V1), el diagrama de entrada y salida de pines se encuentra en el repositorio con el nombre _WiFi LoRa 32 Pinout Diagram.jpg_
-* * Adicionalmente se ha conectado un sensor de temperatura y humedad AM2315, aunque por el momento no funciona.
 * El dispositivo PyCom se trata de una placa de desarrollo Fipy con conectividad WiFi, blueetooth, LoRa y Sigfox que se conecta a una placa Pytrack.
+* El dispositivo Arduino se trata de una placa WiFi LoRa 32 que emula a la placa Heltec WiFi LoRa 32 (V1), el diagrama de entrada y salida de pines se encuentra en el repositorio con el nombre [_WiFi LoRa 32 Pinout Diagram.jpg_](https://github.com/Javieral95/LoRa_Test/blob/main/WiFi%20LoRa%2032%20Pinout%20Diagram.jpg), que se muestra a continuación.
+   * Adicionalmente se ha conectado un sensor de temperatura y humedad AM2315, aunque por el momento no funciona.
 
 Ambos dispositivos disponen de una antera LoRa conectada a ellos.
 
+!["WiFi LoRa 32 Pinout Diagram.jpg"](https://github.com/Javieral95/LoRa_Test/blob/main/WiFi%20LoRa%2032%20Pinout%20Diagram.jpg?raw=true)
+
+_____________________________________
 
 # LoRaMAC 🔩
 
-Los ejemplo LoRaMAC resultan funcionales haciendo uso de un dispositivo final Arduino y un Gateway PyCom. 
+Los ejemplo LoRaMAC (se encuentran en la carpeta homónima) resultan funcionales haciendo uso de un dispositivo final Arduino y un Gateway PyCom. 
 
-El nodo tan solo envía información hardcodeada y el Gateway tan solo recibe la información Pycom e imprime los datos leidos.
+El nodo tan solo envía información hardcodeada y el Gateway tan solo se conecta a LoRa y a WiFi, recibe la información Pycom e imprime los datos leidos (aunque tiene implementada la función de enviar los datos a la red).
+
+Se prescinde del uso de un servidor en red.
 # LoRaWAN ⚙️
 
-Para el uso de estos ejemplos (que resultan funcionales haciendo uso de un dispositivo final Arduino y de un Gateway Pycom) se precisa de un servidor para visualizar los datos. En este ejemplo se ha abordado el uso de **The Things Network** y de **Chirpstark** (anteriormente conocido como LoRaServer).
-* Funciona para las versiones LoRa 1.0.2 y 1.0.3.
+Para el uso de estos ejemplos (que resultan funcionales haciendo uso de un dispositivo final Arduino y de un Gateway Pycom) se precisa de un servidor para visualizar los datos. En este ejemplo se ha abordado el uso de **The Things Network** y de **Chirpstack** (anteriormente conocido como LoRaServer).
+* **Funciona para las versiones LoRa 1.0.2 y 1.0.3.**
 
 ### Tipos de autenticación LoRaWAN
 
@@ -78,10 +99,10 @@ Existen dos tipos de autenticación en LoRaWAN:
 * **OTAA**: "Over-The-Air Activation", es el metodo seguro de conectarse con el servidor. El dispositivo en primer lugar realiza una operación de autenticación en la red (la petición pasa por el gateway), la dirección del dispositivo es dinamica y las claves de seguridad se negocian con el dispositivo.
 
 _*En los ejemplos por el momento solo se hace uso de OTAA._
-
+_____________________________________
 ## Servidor 📦
 
-Como ya se ha comentado anteriormente, precisaremos de un servidor. Para este ejemplo se ha usado una versión gratuita de The Things Network y un servidor Chirpstark propiedad de Pycom (próximamente se desplegará uno local).
+Como ya se ha comentado anteriormente, precisaremos de un servidor. Para este ejemplo se ha usado una versión gratuita de The Things Network y un servidor Chirpstack propiedad de Pycom (próximamente se desplegará uno local).
 
 ### The Things Network
 
@@ -97,12 +118,12 @@ Crear una aplicación es sencillo, accedemos al menú y clicamos en el botón +.
 
 Cuando la aplicación sea creada, podremos añadir dispositivos finales (nodos) clicando en el botón +.
 * La oferta de dispositivos no es muy amplia, si tu dispositivo no se encuentra en la lista añadelo manualmente. 
-* * Indica una versión LoRaWAN 1.0.2 o 1.0.3 y una configuración regional de tipo REV A.
-* * Escoge la frecuencia que vayas a utilizar, en este caso la Europea: 863-870MHz.
+   * Indica una versión LoRaWAN 1.0.2 o 1.0.3 y una configuración regional de tipo REV A.
+   * Escoge la frecuencia que vayas a utilizar, en este caso la Europea: 863-870MHz.
 * Los siguientes IDs son importantes (si no dispones de ellos puedes hacer que TTS los genere por ti):
-* * **DevEUI**: 64 bits que funcionan como identificador único de tu dispositivo final.
-* * **AppEUI**: 64 bits que funcionan como identificador único de la aplicación, puedes rellenarlo con 0s.
-* * **AppKey**: Clave que utilizará el dispositivo en el proceso OTAA de autenticación.
+   * **DevEUI**: 64 bits que funcionan como identificador único de tu dispositivo final.
+   * **AppEUI**: 64 bits que funcionan como identificador único de la aplicación, puedes rellenarlo con 0s.
+   * **AppKey**: Clave que utilizará el dispositivo en el proceso OTAA de autenticación.
 
 #### **Gateways**
 
@@ -129,29 +150,29 @@ function Decoder(bytes, port) {
 
 Fijese en que todas las direcciones hexadecimales de The Things Network se encuentran en mayusculas, es importante a la hora de programar los dispositivos.
 
-### Chirpstark (LoRa Server)
+### Chirpstack (LoRa Server)
 
 Se trata de la alternativa open source, aún se encuentra en desarollo y su documentación no es tan buena. No obstante funciona y permite lanzar el servidor en local.
 
 #### **Servidor Pycom**
 
-PyCom ofrece un servidor Chirpstark para conectar su dispositivo gateway.
+PyCom ofrece un servidor Chirpstack para conectar su dispositivo gateway.
 
 * Accede a https://pybytes.pycom.io/settings/lora-settings y crea tu cuenta.
-* * Una vez accedido al servicio, dirigete a la pestaña settings y selecciona LORA SETTINGS.
-* * Escoge PyCom Chirpstack Server (fijese que tambié se tiene soporte para The Things Network), escoge LoRa OTAA, la frecuencia deseada (en este caso EU868) y clica en Save.
-* * Si es la primera vez que realizas este proceso, recibirás en tu correo electronico tu clave para acceder al servidor: https://loraserver.pycom.io/
+   * Una vez accedido al servicio, dirigete a la pestaña settings y selecciona LORA SETTINGS.
+   * Escoge PyCom Chirpstack Server (fijese que tambié se tiene soporte para The Things Network), escoge LoRa OTAA, la frecuencia deseada (en este caso EU868) y clica en Save.
+   * Si es la primera vez que realizas este proceso, recibirás en tu correo electronico tu clave para acceder al servidor: https://loraserver.pycom.io/
 
 #### **Aplicaciones**
 
 La aplicación es similar a la detallada en el apartado de The Things Network. 
 * Para crear una aplicacion nos dirigimos al menu con el mismo nombre y clicamos en el boton +.
 * Una vez creada, puedes acceder a ella y añadir nodos clicando en el botón +.
-* * Introduce un nombre al dispositivo y una descripción.
-* * Deberás indicar un **Device EUI**: Se trata de 64 bits en hexadecimal que funcionan como identificador único (puedes hacer que ChirpStack lo genere por ti clicando en la flecha en bucle)
-* * Puedes mantener el resto de valores por defecto.
+   * Introduce un nombre al dispositivo y una descripción.
+   * Deberás indicar un **Device EUI**: Se trata de 64 bits en hexadecimal que funcionan como identificador único (puedes hacer que ChirpStack lo genere por ti clicando en la flecha en bucle)
+   * Puedes mantener el resto de valores por defecto.
 * Necesitarás conocer la **Application Key** del dispositivo para hacer uso de OTAA, esta la encontrarás accediendo al dispositivo y, dentro de él, en la pestaña _Keys (OTAA)_
-* * Cambia el perfil del dispositivo a OTAA en la pestaña General de la configuración si aún no se encuentra en ese perfil.
+   * Cambia el perfil del dispositivo a OTAA en la pestaña General de la configuración si aún no se encuentra en ese perfil.
 
 Deberás dirigirte al apartado _Device-profiles_ del servidor, una vez en él acceder al perfil que interesa (OTAA en este caso) y modificar las versiones:
 * **LoRaWAN MAC version: 1.0.2 o 1.0.3** con Regional Parameters revisión de tipo **A**
@@ -165,13 +186,16 @@ Puedes dejar el resto de valores por defecto.
 
 #### **Payload:**
 
-Para poder leer los datos que ha enviado el nodo al servidor se necesita descodificar el payload, en el caso de Chirpstack lo haremos para cada perfil de dispositivo, en el apartado Device Profiles_ accedemos al perfil que nos interesa (en este caso OTAA) y accedemos a la pestaña _Codec_. En este caso como solo mandamos un hola mundo tenemos la siguiente funcion:
+Para poder leer los datos que ha enviado el nodo al servidor se necesita descodificar el payload, en el caso de Chirpstack lo haremos para cada perfil de dispositivo, en el apartado Device Profiles_ accedemos al perfil que nos interesa (en este caso OTAA) y accedemos a la pestaña _Codec_. En este caso como solo mandamos un hola mundo, podemos escoger en el desplegable _Custom javascript codec functions_ e indicar la siguiente funcion:
 ```
-function Decode(bytes, port) {
-  // Decode plain text; for testing only 
-  return {
-      myTestValue: String.fromCharCode.apply(null, bytes)
-  };
+function Decode(fPort, bytes) {
+
+    var tempObj = new Object();
+  	tempObj.data=bytes;
+    tempObj.decodedData = String.fromCharCode.apply(null, bytes);
+    tempObj.message = "Informacion recibida del nodo";
+    return tempObj;
+
 }
 ```
 
@@ -179,15 +203,78 @@ function Decode(bytes, port) {
 
 Fijese en que todas las direcciones hexadecimales de Chirpstack se encuentran en minusculas, es importante a la hora de programar los dispositivos.
 
-### Lanzar Chirpstark en local
+_____________________________________
 
-  _En construcción_
+## Lanzar servidor Chirpstack privado en local 💻
 
-## Pycom Gateway
+Chirpstack proporciona una alternativa opensource para lanzar nuestro propio servidor privado de LoRaWAN, y nos permite hacerlo de forma simple y mediante contenedores.
 
-A continuación se detalla el código utilizado para lanzar la Gateway en una PyCom (Fipy con Pytrack). Este código se encuentra en _LoRaWAN/LoRaPycomGateway_.
-* _Config_: En este archivo es el archivo configurable para hacer funcioanr tu gateway.
-* _Main_: Archivo principal que lanza el Gateway.
+Es por ello que se ha clonado en el presente repositorio el repositorio propiedad del fundador de Chirpstack ([brocaar](https://github.com/brocaar)) que permite esta operación: [Chirpstack-docker](https://github.com/brocaar/chirpstack-docker). Lo encontramos en la carpeta [_chirpstack-docker_](https://github.com/Javieral95/LoRa_Test/tree/main/chirpstack-docker).
+
+### Arquitectura
+
+Chirpstack tiene diversos componentes en su arquitectura para hacer que el servicio sea capaz de funcionar, son los siguientes:
+
+!["Chirpstack_server_arquitecture.png"](https://github.com/Javieral95/LoRa_Test/blob/main/Chirpstack_server_arquitecture.png?raw=true)
+
+La forma de desplegar el servidor en forma de contenedores nos permite abstraernos de mucho de los componentes de la arquitectura, no obstante se detallan a continuación:
+
+* Dispositivos LoRa y Gateway: Ya definidos.
+* Gateway Bridge: Primer componente de Chirpstack, recibe la información de todos los gateway, la procesa y la envía al servidor MQTT de mensajeria. 
+* Network server: Siguiente componente, monitoriza la red y los dispositivos conectados a este. Es capaz de eliminar duplicados (los mensajes de un nodo puede ser captados por más de un gateway) y consolidar la información para ponerla a disposición del servidor de aplicaciones. También es el encargado de autenticar los dispositivos y de enviar los mensajes descendientes.
+* Application Server: Tercer componente. Permite crear las _aplicaciones_ (grupos de dispositivos finales que envian informacion). Es capaz de relacionar la información con el dispositivo final y de almacenarla.
+* Integraciones: Las más importantes (y necesarias para lanzar el servidor) son:
+   *  Broker MQTT: Servicio de mensajeria interna para los componentes de Chirpstack y gateways (cola de mensajeria).
+   *  Redis: Motor de base de datos en memoria que gestiona la información de los dispositivos y las aplicaciones creadas.
+   *  PostgreSQL: Almacena la configuración de ChirpStack (organizaciones, aplicaciones, usuarios y el historico de información).
+
+### Configuración (Docker)
+
+Antes de desplegar, se debe configurar todos los parametros necesarios en los ficheros de configuración almacenados en el directorio [_configuration_](https://github.com/Javieral95/LoRa_Test/tree/main/chirpstack-docker/configuration).
+
+Puedes consultar la siguiente documentación oficial:
+
+* Gateway Bridge: https://www.chirpstack.io/gateway-bridge/install/config/
+* Network server: https://www.chirpstack.io/network-server/install/config/
+* Application server: https://www.chirpstack.io/application-server/install/config/
+
+**Nota:** Los ficheros de configuración son sensibles a espacios en blanco o lineas vacías, eliminelas para evitar errores.
+
+### Despliegue (Docker)
+
+Como ya se ha comentado antes, el despliegue en contenedores es sencillo y se encuentra en el directorio [_chirpstack-docker_](https://github.com/Javieral95/LoRa_Test/tree/main/chirpstack-docker).
+
+Una vez que ya se configure lo necesario basta con colocarse en el directorio _chirpstack-docker_ y lanzar:
+```
+docker-compose up
+```
+
+### Configurar servidor 
+
+Con la configuración por defecto podrás acceder al servidor en la dirección [_localhost:8080_](http://localhost:8080/). El usuario será **admin** y la contraseña **admin**.
+
+Comenzemos a añadir la configuración básica:
+* Network-Server: Precisamos de añadir primero este componente, accedemos al apartado correspondiente, clicamos en el botón + y en la dirección del servidor introducimos _chirpstack-network-server:8000_ o lo que corresponda en nuestro caso (debido a usar Docker, si lo lanzamos todo en local deberemos introducir localhost).
+* Service-Profile: De forma analoga al paso anterior, accedemos a la ventana de creación de un perfil de servicio. Introducimos el nombre que queramos y seleccionamos como Networ-server el que creamos en el paso anterior usando el desplegable... Podemos dejar el resto de parametros por defecto.
+* Device-Profile: Ahora crearemos un perfil para los dispositivos finales, en este caso solo nos interesa un perfil para usar OTAA.
+  *  Indicamos el nombre que queramos (una buena práctica es indicar OTAA en él).
+  *  Seleccionamos el Network-server creado previamente y una versión de LoRaWAN MAC igual a 1.0.2 o 1.0.3.
+  *  Parametros regionales de tipo A.
+  *  Algoritmo ADR por defecto, Max EIRP y Uplink Interval puede mantenerse en 0.
+  *  En la pestaña Join (OTAA / ABP) habilitamos el check _Device supports OTAA_
+
+### Añadiendo dispositivos
+
+Una vez que se ha configurado el servidor tendremos que registrar nuestros Gateways y crear aplicaciones para registrar nuestros dispositivos finales. Este proceso se realiza de forma análoga al explicado en el apartado anterior de la presente documentación: [Chirpstack (LoRa Server)](###Chirpstack(LoRaServer)).
+
+También se deberá indicar la función que descodifica y codifica la información recibida, también se explica en el apartado anterior.
+  _____________________________________
+
+## Pycom Gateway 🎧
+
+A continuación se detalla el código utilizado para lanzar la Gateway en una PyCom (Fipy con Pytrack). Este código se encuentra en [_LoRaWAN/LoRaPycomGateway_](https://github.com/Javieral95/LoRa_Test/tree/main/LoRaWAN/LoRaPycomGateway).
+* [_Config_](https://github.com/Javieral95/LoRa_Test/blob/main/LoRaWAN/LoRaPycomGateway/config.py): En este archivo es el archivo configurable para hacer funcioanr tu gateway.
+* [_Main_](https://github.com/Javieral95/LoRa_Test/blob/main/LoRaWAN/LoRaPycomGateway/main.py): Archivo principal que lanza el Gateway.
 
 ### Libreria
 
@@ -197,15 +284,16 @@ Se ha hecho uso de la librería [_NanoGateway py_](https://pycom.io/lopy-lorawan
 
 En el archivo Config se encuentra todo lo necesario para personalizar el gateway:
 
-* En las primeras lineas deberás descomentar las correspondientes al servicio que usarás (The Things network o Chirpstark), a continuación las lines de código de la segunda opción (fijese como para cumplir el formato de Gateway EUI de los servidores se debe rellenar el ID de forma que los seis primeros y los seis ultimos digitos pertenezcan a la MAC del dispositivo, pero los restantes se rellena con Fs).
+* En las primeras lineas deberás descomentar las correspondientes al servicio que usarás (The Things network o Chirpstack), a continuación las lines de código de la segunda opción (fijese como para cumplir el formato de Gateway EUI de los servidores se debe rellenar el ID de forma que los seis primeros y los seis ultimos digitos pertenezcan a la MAC del dispositivo, pero los restantes se rellena con Fs).
+  * Si has configurado un servidor privado de ChirpStack, deberás indicar la IP (sin puerto) Network-Server en la variable _SERVER_.
 
 ```
 WIFI_MAC = ubinascii.hexlify(machine.unique_id()) #Debería pasarse a mayusculas para TTS
 SERVER = 'loraserver.pycom.io' #(or url of your server)
-GATEWAY_ID = WIFI_MAC[:6] + "ffff" + WIFI_MAC[6:12] #Minusculas: Por ser chirpstarck
+GATEWAY_ID = WIFI_MAC[:6] + "ffff" + WIFI_MAC[6:12] #Minusculas: Por ser Chirpstack
 ```
 * El puerto puede mantenerse en _1700_, es el que usan ambos servicios.
-* Tras ello, se configura el servidorp ara el reloj, la red WiFi (junto con el Timeout para determinar el error) como la frecuencia de trabajo (en este caso la europea: 865Mhz).
+* Tras ello, se configura el servidor para el reloj, la red WiFi (junto con el Timeout para determinar el error) como la frecuencia de trabajo (en este caso la europea: 865Mhz).
 
 ```
 NTP = "pool.ntp.org"
@@ -255,17 +343,20 @@ def init_loraWAN_gateway():
 ```
 La Pycom mantendra la luz roja hasta que consiga conectarse, una vez escuche peticiones de dispositivos parpadeará su led en color verde.
 
-## Arduino End-device
+_____________________________________
+## Arduino End-device 📡
 
 ### Libreria
 
 Se ha hecho uso de la librería [_MCCI Arduino LoRaWAN_](https://github.com/mcci-catena/arduino-lorawan) que permite abstraerse de muchos aspectos de comunicación LoRa. Ha sido instalada mediante el gestor de librerias de PlatformIO.
 
+Básicamente el código utilizado para el cliente arduino es el que se encuentra en el ejemplo _ttn-otaa.ino_ de la libreria, salvo alguna modificación.
+
 ### Configuracion
 
 La configuración se realiza en dos ficheros diferentes:
-* Los pines fisicos se indican en el archivo _hal.h_
-* La configuracion LoRaWAN se realiza en el archivo _loraWAN.cpp_
+* Los pines fisicos se indican en el archivo [_LoRaWAN/LoRaArduinoClient/include/hal.h_](https://github.com/Javieral95/LoRa_Test/blob/main/LoRaWAN/LoRaArduinoClient/include/hal.h).
+* La configuracion LoRaWAN se realiza en el archivo [_LoRaWAN/LoRaArduinoClient/src/loraWAN.cpp_](https://github.com/Javieral95/LoRa_Test/blob/main/LoRaWAN/LoRaArduinoClient/src/loraWan.cpp).
 
 Toda la configuración relacionada con LoRaWAN, como se ha indicado antes esta indicada en el archivo _loraWAN.cpp_. Al principio del documento se encuentra detallada que datos deben indicarse: **APP_EUI**, **DEV_EUI** y **APP_KEY** (ojo al formato que se indica a continuación).
 * **APP_EUI**: Los 64 bits que identifican a la aplicación (indicado en formato LSB), en TTS puede generarse desde su consola o rellenarlos con 0s. Si usas Chirpstack, dejalo relleno con 0s.
@@ -284,9 +375,9 @@ static const u1_t PROGMEM APPKEY[16] = {0xbd, 0x21, 0x5a, 0x82, 0xb2, 0xf7, 0x92
 
 Tan solo copia el proyecto a tu placa Arduino.
 
-La librería funciona mediante eventos, en este caso los más importantes serán el de autenticación (cuando se complete verás las claves) y el de envío de datos.
+La librería funciona mediante eventos, en este caso los más importantes serán el de autenticación (cuando se complete verás las claves en consola) y el de envío de datos.
 
-El evento en el que se envia datos será _EV_TXCOMPLETE_ en la funcion _void onEvent(ev_t ev)_, observar que el evento incluye la "Ventana RX", momento en el que el dispositivo escucha.
+El evento en el que se envia datos será _EV_TXCOMPLETE_ en la funcion _void onEvent(ev_t ev)_ del archivo [_loraWAN.cpp_](https://github.com/Javieral95/LoRa_Test/blob/main/LoRaWAN/LoRaArduinoClient/src/loraWan.cpp), observar que el evento incluye la "Ventana RX", momento en el que el dispositivo escucha.
 ```
     case EV_TXCOMPLETE:
         Serial.println(F("EV_TXCOMPLETE (includes waiting for RX windows)"));
@@ -302,7 +393,7 @@ El evento en el que se envia datos será _EV_TXCOMPLETE_ en la funcion _void onE
         os_setTimedCallback(&sendjob, os_getTime() + sec2osticks(TX_INTERVAL), do_send);
         break;
 ```
-La función donde se detallará que datos se envían es:
+La función, en el mismo fichero, donde se detallará que datos se envían es:
 ```
 void do_send(osjob_t *j)
 {
@@ -318,8 +409,15 @@ void do_send(osjob_t *j)
         Serial.println(F("Packet queued"));
     }
     // Next TX is scheduled after TX_COMPLETE event.
+}
 ```
-# Problemática
+
+**Nota**: Se sufría un error que impedia al nodo recibir paquetes de vuelta, por lo que era imposible autenticar el dispositivo frente al servidor. Se ha tenido que añadir en el _setup()_ del cliente (más concretamente en la función _LoraWan_startJob()_ del archivo _loraWan.cpp_) la siguiente linea de código que aumenta en un 10% el error del reloj:
+```
+LMIC_setClockError(MAX_CLOCK_ERROR * 10 / 100);
+```
+_____________________________________
+# Problemática 😥
 
 Como bien se sabe, la tasa de transferencia de LoRA es muy baja, lo que provoca una gran perdida de paquetes y una enorme latencia cuando se envía información (en estos ejemplo se envia cada minuto y se visualiza esta perdida), lo que junto a la escasa documentación por ser una nueva técnologia hace que sea algo tediosa trabajar con ella.
 
@@ -337,4 +435,4 @@ Esto no quita que esta técnología pueda _pegar fuerte_ debido a no depender de
 
 ## Licencia 📄
 
-Este proyecto ha sido realizado para la Fundación CTIC, su uso es libre y no es necesarío ningún crédito en su uso.
+Este proyecto ha sido realizado para la Fundación CTIC, su uso es libre y no es necesarío ningún crédito en su uso (Revisar las licencia de las librerias utilizadas).
