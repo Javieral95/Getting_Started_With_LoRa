@@ -189,13 +189,11 @@ Puedes dejar el resto de valores por defecto.
 Para poder leer los datos que ha enviado el nodo al servidor se necesita descodificar el payload, en el caso de Chirpstack lo haremos para cada perfil de dispositivo, en el apartado Device Profiles_ accedemos al perfil que nos interesa (en este caso OTAA) y accedemos a la pestaña _Codec_. En este caso como solo mandamos un hola mundo, podemos escoger en el desplegable _Custom javascript codec functions_ e indicar la siguiente funcion:
 ```
 function Decode(fPort, bytes) {
-
     var tempObj = new Object();
-  	 tempObj.data=bytes;
+  	tempObj.data=bytes;
     tempObj.decodedData = String.fromCharCode.apply(null, bytes);
     tempObj.message = "Informacion recibida del nodo";
     return tempObj;
-
 }
 ```
 
@@ -238,7 +236,7 @@ Puedes consultar la siguiente documentación oficial:
 * Network server: https://www.chirpstack.io/network-server/install/config/
 * Application server: https://www.chirpstack.io/application-server/install/config/
 
-**Nota:** Los ficheros de configuración son sensibles a espacios en blanco o lineas vacías, eliminelas para evitar errores.
+**Nota:** Los ficheros de configuración son sensibles a espacios en blanco o lineas vacías (se han encontrado en la configuración de Mosquitto), revise los archivos y eliminelas para evitar errores.
 
 ### Despliegue (Docker)
 
