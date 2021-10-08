@@ -11,8 +11,8 @@ El presente proyecto busca realizar una pequeña prueba de concepto de la tecnol
     * [The Things Network](###TheThingsNetwork)
     * [ChirpStack (LoRa Server)](###Chirpstack(LoRaServer))
     * [ChirpStack privado en local](###LanzarServidorChirpstackPrivadoEnLocal)
-- [PyCom Gateway](##PycomGateway)
-- [Arduino End-Device](##ArduinoEnd-device)
+  * [PyCom Gateway](##PycomGateway)
+  * [Arduino End-Device](##ArduinoEnd-device)
 - [Problemática](#Problemática)
 - [Fin](#Fin)
 
