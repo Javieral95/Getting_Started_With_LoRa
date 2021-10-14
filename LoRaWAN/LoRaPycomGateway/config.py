@@ -2,7 +2,7 @@
  * Configuration file
  * Gateway to reveive arduino node's data using LoRaWAN
  * Tutorial: https://docs.pycom.io/tutorials/networks/lora/lorawan-nano-gateway/
- * Frecuency: 868 MHz for Europe
+ * Frecuency: 868 MHz for Europe (Remember 1% law)
  * CTIC - LoRa Test
 """
 
@@ -25,18 +25,20 @@ GATEWAY_ID = WIFI_MAC[:6] + "ffff" + WIFI_MAC[6:12]
 
 PORT = 1700
 
-NTP = "pool.ntp.org"
+NTP = "es.pool.ntp.org"
 NTP_PERIOD_S = 3600
 
 #WiFi settings (change it)
-WLAN_SSID = "foo" #"pycom-wifi"
-WLAN_PASS = "123abc123" #"securepassword"
+WLAN_SSID = 'foo' #"pycom-wifi"
+WLAN_PASS = '123abc123' #"securepassword"
 WLAN_TIMEOUT_MS = 180000
 
-# for EU868
+### LoRaWAN for EU868 ###
 LORA_FREQUENCY = 868500000
-LORA_GW_DR = "SF7BW125" # DR_5,Can change in range: SF7 to SF15
-LORA_NODE_DR = 5
+#Spreading Factor: (Higuer value in spreading factor = More distance but less speed transmision)
+LORA_GW_DR = "SF7BW125" # Can change in range: SF7 (SF7BW250 also exists) to SF15
+LORA_NODE_DR = 5 # 5 (6 using 250Khz) for SF7, 4 for SF6... all using 125Khz
+###
 
 # --- Functions ---
 def get_gateway_id():

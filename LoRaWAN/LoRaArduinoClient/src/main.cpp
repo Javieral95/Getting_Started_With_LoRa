@@ -12,8 +12,9 @@ void setup()
     initSerialMonitor();
     Serial.println(F("Starting"));
 
-    //AM2315 sensor init
+    //AM2315 sensor and display screen init
     initAM2315();
+    initDisplay();
 
     // Start job (sending automatically, starts OTAA too)
     LoraWan_startJob();

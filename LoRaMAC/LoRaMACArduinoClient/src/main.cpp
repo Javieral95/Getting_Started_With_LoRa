@@ -20,6 +20,13 @@ String initLoraMsg(float temp, float hum)
   return ret;
 }
 
+void waitNextLoop()
+{
+  delay(INTERVAL_TIME / 2);
+  clearDisplay();
+  delay(INTERVAL_TIME / 2);
+}
+
 //Setup and Loop
 void setup()
 {
@@ -27,6 +34,9 @@ void setup()
   initSerialMonitor();
   while (!Serial)
     ;
+
+  //Init Display
+  initDisplay();
 
   //Init Lora
   initLoraMACTransceiver();
@@ -38,7 +48,9 @@ void loop()
   // put your main code here, to run repeatedly:
   //To-Do: Read Temp and Hum
   String msg = initLoraMsg(24, 55);
+
+  printSensorInfoInDisplay(24,55);
   LoRa_sendMessage(msg);
 
-  delay(INTERVAL_TIME);
+  waitNextLoop();
 }

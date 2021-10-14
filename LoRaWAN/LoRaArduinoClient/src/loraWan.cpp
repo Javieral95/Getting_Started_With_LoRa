@@ -4,7 +4,7 @@
 
 /*******************************************************************************
  * *********************************************************************
- * * Using: MCCI LoRaWAN LMIC library V4.0.0                           * 
+ * * Using: MCCI LoRaWAN LMIC library V4.0.0                           *
  * * The following lines are the used example text, read it carefully.  *
  * *********************************************************************
  * Copyright (c) 2015 Thomas Telkamp and Matthijs Kooijman
@@ -40,9 +40,6 @@
  *******************************************************************************/
 
 #include "loraWan.h"
-#include <lmic.h>
-#include <hal/hal.h>
-#include <SPI.h>
 
 /************************************************/
 /*********  THE THINGS NETWORK EXAMPLE  *********/
@@ -52,14 +49,14 @@
 /* This APP_EUI must be in little-endian format (LSB), so least-significant-byte
  first. When copying an EUI from ttnctl output, this means to reverse
  the bytes. In this version, APP_EUI can be = 0, but you can config in TTS console. */
-//static const u1_t PROGMEM APPEUI[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+// static const u1_t PROGMEM APPEUI[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 /* DEV_UI is configured in TTS console, should also be in little endian format (LSB), see above. (Warning: Must be in UPPERcase letters) */
-//static const u1_t PROGMEM DEVEUI[8] = {0x7B, 0x1B, 0xDE, 0x2C, 0x7B, 0x4B, 0x18, 0x5F}; //Original (in MSB) was: 0x5F, 0x18, 0x4B, 0x7B, 0x2C, 0xDE, 0x1B, 0x7B
+// static const u1_t PROGMEM DEVEUI[8] = {0x7B, 0x1B, 0xDE, 0x2C, 0x7B, 0x4B, 0x18, 0x5F}; //Original (in MSB) was: 0x5F, 0x18, 0x4B, 0x7B, 0x2C, 0xDE, 0x1B, 0x7B
 
 /* This key should be in big endian format (MSB), can be copied as-is.
  Also configured in TTS console  (Warning: Must be in UPPERcase letters) */
-//static const u1_t PROGMEM APPKEY[16] = {0xBC, 0x21, 0x54, 0x80, 0xC2, 0xD7, 0x90, 0xF2, 0xC7, 0xCB, 0xB2, 0x88, 0xC7, 0x55, 0x33, 0xE7};
+// static const u1_t PROGMEM APPKEY[16] = {0xBC, 0x21, 0x54, 0x80, 0xC2, 0xD7, 0x90, 0xF2, 0xC7, 0xCB, 0xB2, 0x88, 0xC7, 0x55, 0x33, 0xE7};
 
 /************************************************/
 /***********    CHIRPSTACK EXAMPLE    ***********/
@@ -71,7 +68,7 @@
 static const u1_t PROGMEM APPEUI[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 /* DEV_UI is configured in TTS console, should also be in little endian format (LSB), see above. (Warning: Must be in LOWERcase letters) */
-static const u1_t PROGMEM DEVEUI[8] = {0x7b, 0x1b, 0xde, 0x2c, 0x7b, 0x4b, 0x18, 0x5f}; //Original (in MSB) was: 0x5f, 0x18, 0x4b, 0x7b, 0x2c, 0xde, 0x1b, 0x7b
+static const u1_t PROGMEM DEVEUI[8] = {0x7b, 0x1b, 0xde, 0x2c, 0x7b, 0x4b, 0x18, 0x5f}; // Original (in MSB) was: 0x5f, 0x18, 0x4b, 0x7b, 0x2c, 0xde, 0x1b, 0x7b
 
 /* This key should be in big endian format (MSB), can be copied as-is.
  Also configured in Chirpstack console (Warning: Must be in LOWERcase letters) */
@@ -87,17 +84,19 @@ const lmic_pinmap lmic_pins = {
 };
 
 /****************** End of config ****************/
+bool isLoopRunning = false;
 
 void os_getArtEui(u1_t *buf) { memcpy_P(buf, APPEUI, 8); }
 void os_getDevEui(u1_t *buf) { memcpy_P(buf, DEVEUI, 8); }
 void os_getDevKey(u1_t *buf) { memcpy_P(buf, APPKEY, 16); }
 
+// static uint8_t payload[5]; //Data to send
 static uint8_t mydata[] = "Hello World!";
 static osjob_t sendjob;
 
 // Schedule TX every this many seconds (might become longer due to duty
 // cycle limitations).
-const unsigned TX_INTERVAL = 60; //The time betweend packet deliveries
+const unsigned TX_INTERVAL = 60; // The time betweend packet deliveries
 
 /**** FUNCTIONS AND EVENTS ****/
 void printHex2(unsigned v)
@@ -127,6 +126,7 @@ void onEvent(ev_t ev)
         Serial.println(F("EV_BEACON_TRACKED"));
         break;
     case EV_JOINING:
+        printLoraJoinInfoInDisplay();
         Serial.println(F("EV_JOINING"));
         break;
     case EV_JOINED:
@@ -156,6 +156,8 @@ void onEvent(ev_t ev)
                     Serial.print("-");
                 printHex2(nwkKey[i]);
             }
+
+            printLoraSuccesfullyJoinInDisplay();
             Serial.println();
         }
         // Disable link check validation (automatically enabled
@@ -172,9 +174,11 @@ void onEvent(ev_t ev)
         ||     break;
         */
     case EV_JOIN_FAILED:
+        printLoraJoinErrorInDisplay();
         Serial.println(F("EV_JOIN_FAILED"));
         break;
     case EV_REJOIN_FAILED:
+        printLoraJoinErrorInDisplay();
         Serial.println(F("EV_REJOIN_FAILED"));
         break;
     case EV_TXCOMPLETE:
@@ -206,7 +210,7 @@ void onEvent(ev_t ev)
     case EV_LINK_ALIVE:
         Serial.println(F("EV_LINK_ALIVE"));
         break;
-    /*
+        /*
         || This event is defined but not used in the code. No
         || point in wasting codespace on it.
         ||
@@ -224,6 +228,7 @@ void onEvent(ev_t ev)
         /* do not print anything -- it wrecks timing */
         break;
     case EV_JOIN_TXCOMPLETE:
+        printLoraJoinErrorInDisplay();
         Serial.println(F("EV_JOIN_TXCOMPLETE: no JoinAccept"));
         break;
 
@@ -241,14 +246,19 @@ void LoraWan_startJob()
     // Reset the MAC state. Session and pending data transfers will be discarded.
     LMIC_reset();
 
-    //THE FOLLOWING LINE IS IMPORTANT, NOT INCLUDE IN EXAMPLE: Fix Fail request join error.
-    LMIC_setClockError(MAX_CLOCK_ERROR * 10 / 100);
+    // THE FOLLOWING LINE IS IMPORTANT, NOT INCLUDE IN EXAMPLE: Fix Fail request join error.
+    LMIC_setClockError(10 * MAX_CLOCK_ERROR / 100);
     //
 
+    LMIC_setupChannel(0, 868500000, DR_RANGE_MAP(DR_SF7, DR_SF7),  BAND_CENTI);      // g-band
+    LMIC_setupChannel(1, 868500000, DR_RANGE_MAP(DR_SF7, DR_SF7), BAND_CENTI);      // g-band
+    LMIC_setupChannel(2, 868500000, DR_RANGE_MAP(DR_SF7, DR_SF7),  BAND_CENTI);      // g-band
+
     do_send(&sendjob);
+    isLoopRunning = true;
 }
 
-//This function is the LoRaWAN data loop: Read data, encrypt and save it to send.
+// This function is the LoRaWAN data loop: Read data, encrypt and save it to send.
 void do_send(osjob_t *j)
 {
     // Check if there is not a current TX/RX job running
@@ -258,12 +268,9 @@ void do_send(osjob_t *j)
     }
     else
     {
-        //First, read temperature and humidity
-        /*
-        am2315_readedData data= readAM2315Data();
-        Serial.println(F(data.temp));
-        Serial.println(F(data.hum));
-        data.temp = data.temp / 100; // adjust for the f2sflt16 range (-1 to 1)
+        // First, read temperature and humidity
+        am2315_readedData data = readAM2315Data();
+        /*data.temp = data.temp / 100; // adjust for the f2sflt16 range (-1 to 1)
         data.hum = data.hum / 100;
         uint16_t payloadTemp = LMIC_f2sflt16(data.temp);
         uint16_t payloadHum = LMIC_f2sflt16(data.hum);
@@ -277,11 +284,18 @@ void do_send(osjob_t *j)
         payload[1] = tempHigh;
         payload[2] = humidLow;
         payload[3] = humidHigh;
-        LMIC_setTxData2(1, payload, sizeof(payload) - 1, 0);
-        */
+        LMIC_setTxData2(1, payload, sizeof(payload) - 1, 0);*/
+
         LMIC_setTxData2(1, mydata, sizeof(mydata) - 1, 0);
-        // Prepare upstream data transmission at the next possible time.
         Serial.println(F("Packet queued"));
+
+        if (isLoopRunning)
+        {
+            printSensorInfoInDisplay(24, 50);
+            // Prepare upstream data transmission at the next possible time.
+            printLoraSentInDisplay();
+        }
     }
+
     // Next TX is scheduled after TX_COMPLETE event.
 }

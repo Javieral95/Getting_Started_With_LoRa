@@ -21,7 +21,7 @@ void initLoraMACCommunication()
         Serial.print(". ");
         delay(500);
     }
-    //LoRa.setSyncWord(LORA_SYNC_WORD); // The sync word assures you don't get LoRa messages from other LoRa transceivers ranges from 0-0xFF
+    LoRa.setSyncWord(LORA_SYNC_WORD); // The sync word assures you don't get LoRa messages from other LoRa transceivers ranges from 0-0xFF
     Serial.println("LoRa connect succesfully!");
 }
 
@@ -48,6 +48,7 @@ void LoRa_sendMessage(String message)
     LoRa.beginPacket();   // start packet
     LoRa.print(message);  // add payload
     LoRa.endPacket(true); // finish packet and send it
+    printLoraInfoInDisplay();
 }
 
 void onReceive(int packetSize)

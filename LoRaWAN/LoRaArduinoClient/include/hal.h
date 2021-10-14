@@ -10,7 +10,6 @@
 /* - - Includes - - */
 #include <Arduino.h>
 
-#include <Time.h>
 #include <Wire.h>
 #include <Adafruit_AM2315.h> //Sensor
 #include <Adafruit_GFX.h>
@@ -39,13 +38,30 @@ struct am2315_readedData{
 #define LORA_DIO1 33
 #define LORA_DIO2 32
 
-#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-#define SCREEN_WIDTH 128 // OLED display width, in pixels //(128)x64
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels //128x(64)
+//Display
+#define OLED_SDA 4
+#define OLED_SCL 15 
+#define OLED_RST 16
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+
+#define INIT_DISPLAY_COLUMN 0
+#define FIRST_DISPLAY_ROW 10
+#define SECOND_DISPLAY_ROW 20
+#define THIRD_DISPLAY_ROW 30
+#define FOURTH_DISPLAY_ROW 40
+#define FIFTH_DISPLAY_ROW 50
 
 /* - - Functions - - */
 void initSerialMonitor();
 void initAM2315();
 am2315_readedData readAM2315Data();
+void initDisplay();
+void printSensorInfoInDisplay(float,float);
+void printLoraJoinInfoInDisplay();
+void printLoraJoinErrorInDisplay();
+void printLoraSuccesfullyJoinInDisplay();
+void printLoraSentInDisplay();
+void clearDisplay();
 
 #endif

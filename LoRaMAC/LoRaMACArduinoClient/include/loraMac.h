@@ -4,11 +4,16 @@
  * LoRa Mac functions
  */
 
+/** INCLUDES **/
 #include "hal.h"
 
+/** DEFINES **/
 #define LORAWAN_FRECUENCY 868E6
-#define LORA_SYNC_WORD 0xF3
+#define LORA_SYNC_WORD 0x12
 
+
+
+/** FUNCTIONS **/
 void initLoraMACTransceiver();
 void initLoraMACCommunication();
 

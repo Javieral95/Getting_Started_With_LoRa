@@ -5,9 +5,12 @@
  */
 
 #include "hal.h"
+
 #include <lmic.h>
 #include <hal/hal.h>
 #include <SPI.h>
+
+#define ARDUINO_LMIC_CFG_SUBBAND -1
 
 /* DEFINES, don't worry nobody used this values */
 //#define LORAWAN_FRECUENCY 868E6

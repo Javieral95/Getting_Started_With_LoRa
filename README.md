@@ -1,4 +1,4 @@
-# LORA_TEST for CTIC
+# Getting_Started_With_LoRa, experimentation for CTIC
 
 El presente proyecto busca realizar una pequeña prueba de concepto de la tecnologia de transmisión LoRa para recabar información que podrá ser usada por la [Fundación CTIC](https://www.fundacionctic.org/es/home). Se enviará información desde un dispositivo final (Nodo o cliente), esta información será recogida por un dispositivo Gateway y este, a su vez, la reenviará a un servidor para almacenarla.
 
@@ -8,11 +8,11 @@ El presente proyecto busca realizar una pequeña prueba de concepto de la tecnol
 - [LoRaMAC](#LoRaMAC)
 - [LoRaWAN](#LoRaWAN)
   * [Servidor](##Servidor) 
-    * [The Things Network](###TheThingsNetwork)
-    * [ChirpStack (LoRa Server)](###Chirpstack(LoRaServer))
-    * [ChirpStack privado en local](###LanzarServidorChirpstackPrivadoEnLocal)
-  * [PyCom Gateway](##PycomGateway)
-  * [Arduino End-Device](##ArduinoEnd-device)
+    * [The Things Network](###The-Things-Network)
+    * [ChirpStack (LoRa Server)](###Chirpstack-(LoRaServer))
+    * [ChirpStack privado en local](###Lanzar-Servidor-Chirpstack-Privado-En-Local)
+  * [PyCom Gateway](##Pycom-Gateway)
+  * [Arduino End-Device](##Arduino-End-device)
 - [Problemática](#Problemática)
 - [Fin](#Fin)
 
@@ -42,11 +42,24 @@ Podemos comunicar a los dispositivos mediante LoRaMAC (también conocido mediant
 Este enfoque utiliza una topología en estrella.
 
 Por otro lado, en **LoRaWAN**, también se tienen **tres tipos de dispositivos finales o nodos**:
-* De clase **A**: La más soportada y la que supone mayor ahorro de energia (el dispositivo pasa a modo escuchar o Ventana RX después de enviar datos al gateway), esto hace que solo pueda escuchar algo después de enviar información: Utiles para enviar información en intervalos separados de tiempo o cuando se reciba un evento (Ej: La temperatura bajo de 21º).
-* De clase **B**: Tiene soporte para recibir paquetes del gateway, permite más espacios entre los ascendentes (enviados) y descendentes (recibidos). Se reduce la latencia de mensajes pero consume más energia.
-* De clase **C**: Se dispone de recepción de paquetes continua, el dispositivo solo deja de escuchar en el momento que envía alguna información.
+* De clase **A** (Baseline): La más soportada y la que supone mayor ahorro de energia (el dispositivo pasa a modo escuchar o Ventana RX solo después de enviar datos al gateway), esto hace que solo pueda escuchar algo después de enviar información: Utiles para enviar información en intervalos separados de tiempo o cuando se reciba un evento (Ej: La temperatura bajo de 21º).
+* De clase **B** (Beacon): Tiene soporte para recibir paquetes del gateway, permite más espacios entre los ascendentes (enviados) y descendentes (recibidos). Se reduce la latencia de mensajes pero consume más energia.
+* De clase **C** (Continous): Se dispone de recepción de paquetes continua, el dispositivo solo deja de escuchar en el momento que envía alguna información.
 
 _*En los ejemplos solo se tiene soporte para nodos de clase A y B (soportados por la libreria utilizada), pero solo se implementa el de tipo A._
+
+### La regla del 1%
+
+Si se hace uso de la banda de frecuencia libre en Europa (868Mhz) se han de tener en cuenta algunas limitaciones:
+* La potencia máxima de emisión es 25 mW (a priori no es un problema, los dispositivos no suelen llegar a tanto).
+* Y lo que es más importante: **La regla del 1%**. Esta regla indica que no podemos transmitir más que el 1% del tiempo, es decir, si enviar un paquete nos lleva 100ms tendremos que esperar 900ms para enviar el siguiente.
+
+### Sub-bandas o canales
+
+En cada banda de frecuencia existen varios canales o sub-bandas, en el caso de la Europea (868Mhz) nos encontramos con **10 canales** numerados del 0 al 9. Pero, por ejemplo en la Americana (915Mhz) podemos encontrarnos hasta 64.
+
+El envio de información a través de un canal u otro es una tarea que suelen facilitar las librerias a utilizar.
+
 _____________________________________
 ## Pre-requisitos 📋
 
@@ -59,24 +72,24 @@ _Para comenzar basta con clonar el repositorio:_
 
 
 ```
-git clone https://github.com/Javieral95/LoRa_Test.git
+git clone https://github.com/Javieral95/Getting_Started_With_LoRa.git
 ```
 
 _Y después subir los proyectos pertinentes a los dispositivos_
 * Para el caso del dispositivo Arduino se ha utilizado **Visual Studio Code** con la Extensión **PlatformIO**.
-* Para el caso del dispositivo PyCom se ha utilizado **Atom** con la Extensión **Pymakr**.
+* Para el caso del dispositivo PyCom se ha utilizado **Atom** con la Extensión **Pymakr** (Pycom MicroPython V1.20.1.r2 y Pybytes V1.3.0).
 
 ¿Por qué dos IDEs? Simple, la extensión Pymakr apenas funciona en Visual Studio Code. Sientete libre de usar el espacio de trabajo que te resulte más comodo.
 
 ### Los dispositivos utilizados 🛠️
 
 * El dispositivo PyCom se trata de una placa de desarrollo Fipy con conectividad WiFi, blueetooth, LoRa y Sigfox que se conecta a una placa Pytrack.
-* El dispositivo Arduino se trata de una placa WiFi LoRa 32 que emula a la placa Heltec WiFi LoRa 32 (V1), el diagrama de entrada y salida de pines se encuentra en el repositorio con el nombre [_WiFi LoRa 32 Pinout Diagram.jpg_](https://github.com/Javieral95/LoRa_Test/blob/main/WiFi%20LoRa%2032%20Pinout%20Diagram.jpg), que se muestra a continuación.
+* El dispositivo Arduino se trata de una placa WiFi LoRa 32 que emula a la placa Heltec WiFi LoRa 32 (V1), el diagrama de entrada y salida de pines se encuentra en el repositorio con el nombre [_WiFi LoRa 32 Pinout Diagram.jpg_](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/WiFi%20LoRa%2032%20Pinout%20Diagram.jpg), que se muestra a continuación.
    * Adicionalmente se ha conectado un sensor de temperatura y humedad AM2315, aunque por el momento no funciona.
 
 Ambos dispositivos disponen de una antera LoRa conectada a ellos.
 
-!["WiFi LoRa 32 Pinout Diagram.jpg"](https://github.com/Javieral95/LoRa_Test/blob/main/WiFi%20LoRa%2032%20Pinout%20Diagram.jpg?raw=true)
+!["WiFi LoRa 32 Pinout Diagram.jpg"](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/WiFi%20LoRa%2032%20Pinout%20Diagram.jpg?raw=true)
 
 _____________________________________
 
@@ -207,13 +220,13 @@ _____________________________________
 
 Chirpstack proporciona una alternativa opensource para lanzar nuestro propio servidor privado de LoRaWAN, y nos permite hacerlo de forma simple y mediante contenedores.
 
-Es por ello que se ha clonado en el presente repositorio el repositorio propiedad del fundador de Chirpstack ([brocaar](https://github.com/brocaar)) que permite esta operación: [Chirpstack-docker](https://github.com/brocaar/chirpstack-docker). Lo encontramos en la carpeta [_chirpstack-docker_](https://github.com/Javieral95/LoRa_Test/tree/main/chirpstack-docker).
+Es por ello que se ha clonado en el presente repositorio el repositorio propiedad del fundador de Chirpstack ([brocaar](https://github.com/brocaar)) que permite esta operación: [Chirpstack-docker](https://github.com/brocaar/chirpstack-docker). Lo encontramos en la carpeta `chirpstack-docker`.
 
 ### Arquitectura
 
 Chirpstack tiene diversos componentes en su arquitectura para hacer que el servicio sea capaz de funcionar, son los siguientes:
 
-!["Chirpstack_server_arquitecture.png"](https://github.com/Javieral95/LoRa_Test/blob/main/Chirpstack_server_arquitecture.png?raw=true)
+!["Chirpstack_server_arquitecture.png"](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/Chirpstack_server_arquitecture.png?raw=true)
 
 La forma de desplegar el servidor en forma de contenedores nos permite abstraernos de mucho de los componentes de la arquitectura, no obstante se detallan a continuación:
 
@@ -222,13 +235,13 @@ La forma de desplegar el servidor en forma de contenedores nos permite abstraern
 * Network server: Siguiente componente, monitoriza la red y los dispositivos conectados a este. Es capaz de eliminar duplicados (los mensajes de un nodo puede ser captados por más de un gateway) y consolidar la información para ponerla a disposición del servidor de aplicaciones. También es el encargado de autenticar los dispositivos y de enviar los mensajes descendientes.
 * Application Server: Tercer componente. Permite crear las _aplicaciones_ (grupos de dispositivos finales que envian informacion). Es capaz de relacionar la información con el dispositivo final y de almacenarla.
 * Integraciones: Las más importantes (y necesarias para lanzar el servidor) son:
-   *  Broker MQTT: Servicio de mensajeria interna para los componentes de Chirpstack y gateways (cola de mensajeria).
+   *  Broker MQTT: Servicio de mensajeria interna para los componentes de Chirpstack y gateways (cola de mensajeria, en este caso se usa _Eclipse Mosquitto_).
    *  Redis: Motor de base de datos en memoria que gestiona la información de los dispositivos y las aplicaciones creadas.
    *  PostgreSQL: Almacena la configuración de ChirpStack (organizaciones, aplicaciones, usuarios y el historico de información).
 
 ### Configuración (Docker)
 
-Antes de desplegar, se debe configurar todos los parametros necesarios en los ficheros de configuración almacenados en el directorio [_configuration_](https://github.com/Javieral95/LoRa_Test/tree/main/chirpstack-docker/configuration).
+Antes de desplegar, se debe configurar todos los parametros necesarios en los ficheros de configuración almacenados en el directorio [_configuration_](https://github.com/Javieral95/Getting_Started_With_LoRa/tree/main/chirpstack-docker/configuration).
 
 Puedes consultar la siguiente documentación oficial:
 
@@ -240,7 +253,7 @@ Puedes consultar la siguiente documentación oficial:
 
 ### Despliegue (Docker)
 
-Como ya se ha comentado antes, el despliegue en contenedores es sencillo y se encuentra en el directorio [_chirpstack-docker_](https://github.com/Javieral95/LoRa_Test/tree/main/chirpstack-docker).
+Como ya se ha comentado antes, el despliegue en contenedores es sencillo y se encuentra en el directorio `chirpstack-docker`.
 
 Una vez que ya se configure lo necesario basta con colocarse en el directorio _chirpstack-docker_ y lanzar:
 ```
@@ -260,6 +273,9 @@ Comenzemos a añadir la configuración básica:
   *  Parametros regionales de tipo A.
   *  Algoritmo ADR por defecto, Max EIRP y Uplink Interval puede mantenerse en 0.
   *  En la pestaña Join (OTAA / ABP) habilitamos el check _Device supports OTAA_
+* Gateway-Profile: No es necesario definir uno pues el Gateway no precisa de ello, pero podemos crearlo sin problema y después asignarlo.
+  * Se define el tiempo de cada intervalo en el que el Gateway envia su información al servidor.
+  * Se define que canales de la banda estan habilitados.
 
 ### Añadiendo dispositivos
 
@@ -270,13 +286,15 @@ También se deberá indicar la función que descodifica y codifica la informaci�
 
 ## Pycom Gateway 🎧
 
-A continuación se detalla el código utilizado para lanzar la Gateway en una PyCom (Fipy con Pytrack). Este código se encuentra en [_LoRaWAN/LoRaPycomGateway_](https://github.com/Javieral95/LoRa_Test/tree/main/LoRaWAN/LoRaPycomGateway).
-* [_Config_](https://github.com/Javieral95/LoRa_Test/blob/main/LoRaWAN/LoRaPycomGateway/config.py): En este archivo es el archivo configurable para hacer funcioanr tu gateway.
-* [_Main_](https://github.com/Javieral95/LoRa_Test/blob/main/LoRaWAN/LoRaPycomGateway/main.py): Archivo principal que lanza el Gateway.
+A continuación se detalla el código utilizado para lanzar la Gateway en una PyCom (Fipy con Pytrack). Este código se encuentra en [_LoRaWAN/LoRaPycomGateway_](https://github.com/Javieral95/Getting_Started_With_LoRa/tree/main/LoRaWAN/LoRaPycomGateway).
+* [_Config_](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/LoRaWAN/LoRaPycomGateway/config.py): En este archivo es el archivo configurable para hacer funcioanr tu gateway.
+* [_Main_](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/LoRaWAN/LoRaPycomGateway/main.py): Archivo principal que lanza el Gateway.
 
 ### Libreria
 
 Se ha hecho uso de la librería [_NanoGateway py_](https://pycom.io/lopy-lorawan-nano-gateway-using-micropython-and-ttn/) que permite lanzar el gateway en cuestión de minutos.
+
+Nano-Gateway convierte un dispositivo Pycom en un gateway sencillo que escucha tan solo un canal de la banda de frecuencia (monocanal), para escuchar más bandas en Pycom es posible que se precise de un gateway comercial.
 
 ### Configuración
 
@@ -292,6 +310,9 @@ GATEWAY_ID = WIFI_MAC[:6] + "ffff" + WIFI_MAC[6:12] #Minusculas: Por ser Chirpst
 ```
 * El puerto puede mantenerse en _1700_, es el que usan ambos servicios.
 * Tras ello, se configura el servidor para el reloj, la red WiFi (junto con el Timeout para determinar el error) como la frecuencia de trabajo (en este caso la europea: 865Mhz).
+  * También se define el Spreading Factor (Factor de esparcimiento): Cuanto mayor sea el valor mayor distancia se cubrira, pero se tendra menos velocidad de transmisión aún, se indica como SF7B125 a SF15B125.
+  * El Datarate (DR) es un valor que acompaña al spreading Factor.
+  * Más información [aquí](https://lora-alliance.org/resource_hub/rp2-1-0-3-lorawan-regional-parameters/).
 
 ```
 NTP = "pool.ntp.org"
@@ -302,10 +323,12 @@ WLAN_SSID = "foo" #"pycom-wifi"
 WLAN_PASS = "123abc123" #"securepassword"
 WLAN_TIMEOUT_MS = 180000
 
-# for EU868
+### LoRaWAN for EU868 ###
 LORA_FREQUENCY = 868500000
-LORA_GW_DR = "SF7BW125" # DR_5,Can change in range: SF7 to SF15
-LORA_NODE_DR = 5
+#Spreading Factor: (Higher value in SF=More distance but less speed transmision)
+LORA_GW_DR = "SF7BW125" # DR_5,Can change in range: SF7 to SF15 (SF7B250 also exists)
+LORA_NODE_DR = 5 #5 (6 uses 250Khz) for SF7, 4 for SF6.. all using 125Khz
+###
 ```
 * La función que se encuentra al final del archivo config imprimira por pantalla la Gateway EUI que puedes copiar y pegar en la configuración del servidor.
 
@@ -344,17 +367,21 @@ La Pycom mantendra la luz roja hasta que consiga conectarse, una vez escuche pet
 _____________________________________
 ## Arduino End-device 📡
 
+A continuación se detalla lo necesario para hacer funcionar el nodo de clase A usando Arduino.
+
+Teoricamente usa todas los canales disponibles en la banda de frecuencia, pero no esta comprobado que esto sea asi.
+
 ### Libreria
 
 Se ha hecho uso de la librería [_MCCI Arduino LoRaWAN_](https://github.com/mcci-catena/arduino-lorawan) que permite abstraerse de muchos aspectos de comunicación LoRa. Ha sido instalada mediante el gestor de librerias de PlatformIO.
 
-Básicamente el código utilizado para el cliente arduino es el que se encuentra en el ejemplo _ttn-otaa.ino_ de la libreria, salvo alguna modificación.
+Básicamente el código utilizado para el cliente arduino es el que se encuentra en el ejemplo `ttn-otaa.ino` de la libreria, salvo alguna modificación.
 
 ### Configuracion
 
 La configuración se realiza en dos ficheros diferentes:
-* Los pines fisicos se indican en el archivo [_LoRaWAN/LoRaArduinoClient/include/hal.h_](https://github.com/Javieral95/LoRa_Test/blob/main/LoRaWAN/LoRaArduinoClient/include/hal.h).
-* La configuracion LoRaWAN se realiza en el archivo [_LoRaWAN/LoRaArduinoClient/src/loraWAN.cpp_](https://github.com/Javieral95/LoRa_Test/blob/main/LoRaWAN/LoRaArduinoClient/src/loraWan.cpp).
+* Los pines fisicos se indican en el archivo [_LoRaWAN/LoRaArduinoClient/include/hal.h_](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/LoRaWAN/LoRaArduinoClient/include/hal.h).
+* La configuracion LoRaWAN se realiza en el archivo [_LoRaWAN/LoRaArduinoClient/src/loraWAN.cpp_](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/LoRaWAN/LoRaArduinoClient/src/loraWan.cpp).
 
 Toda la configuración relacionada con LoRaWAN, como se ha indicado antes esta indicada en el archivo _loraWAN.cpp_. Al principio del documento se encuentra detallada que datos deben indicarse: **APP_EUI**, **DEV_EUI** y **APP_KEY** (ojo al formato que se indica a continuación).
 * **APP_EUI**: Los 64 bits que identifican a la aplicación (indicado en formato LSB), en TTS puede generarse desde su consola o rellenarlos con 0s. Si usas Chirpstack, dejalo relleno con 0s.
@@ -375,7 +402,7 @@ Tan solo copia el proyecto a tu placa Arduino.
 
 La librería funciona mediante eventos, en este caso los más importantes serán el de autenticación (cuando se complete verás las claves en consola) y el de envío de datos.
 
-El evento en el que se envia datos será _EV_TXCOMPLETE_ en la funcion _void onEvent(ev_t ev)_ del archivo [_loraWAN.cpp_](https://github.com/Javieral95/LoRa_Test/blob/main/LoRaWAN/LoRaArduinoClient/src/loraWan.cpp), observar que el evento incluye la "Ventana RX", momento en el que el dispositivo escucha.
+El evento en el que se envia datos será _EV_TXCOMPLETE_ en la funcion _void onEvent(ev_t ev)_ del archivo [_loraWAN.cpp_](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/LoRaWAN/LoRaArduinoClient/src/loraWan.cpp), observar que el evento incluye la "Ventana RX", momento en el que el dispositivo escucha.
 ```
     case EV_TXCOMPLETE:
         Serial.println(F("EV_TXCOMPLETE (includes waiting for RX windows)"));
@@ -410,16 +437,16 @@ void do_send(osjob_t *j)
 }
 ```
 
-**Nota**: Se sufría un error que impedia al nodo recibir paquetes de vuelta, por lo que era imposible autenticar el dispositivo frente al servidor. Se ha tenido que añadir en el _setup()_ del cliente (más concretamente en la función _LoraWan_startJob()_ del archivo _loraWan.cpp_) la siguiente linea de código que aumenta en un 10% el error del reloj:
+**Nota**: Se sufría un error que impedia al nodo recibir paquetes de vuelta, por lo que era imposible autenticar el dispositivo frente al servidor. Se ha tenido que añadir en el _setup()_ del cliente (más concretamente en la función _LoraWan_startJob()_ del archivo _loraWan.cpp_) la siguiente linea de código que aumenta en un 10% el error máximo del reloj:
 ```
 LMIC_setClockError(MAX_CLOCK_ERROR * 10 / 100);
 ```
 _____________________________________
 # Problemática 😥
 
-Como bien se sabe, la tasa de transferencia de LoRA es muy baja, lo que provoca una gran perdida de paquetes y una enorme latencia cuando se envía información (en estos ejemplo se envia cada minuto y se visualiza esta perdida), lo que junto a la escasa documentación por ser una nueva técnologia hace que sea algo tediosa trabajar con ella.
+Como bien se sabe, la tasa de transferencia de LoRA es muy baja, lo que provoca una gran perdida de paquetes y una enorme latencia cuando se envía información (en estos ejemplos se envia cada minuto y se visualiza esta perdida, aproximadamente solo llegan al Gateway uno de cada diez paquetes que el nodo envía), lo que junto a la escasa documentación por ser una nueva técnologia hace que sea algo tediosa trabajar con ella.
 
-Algunos expertos indican que es necesario cierta distancia entre los dispositivos (30m y preferiblemente algún obstaculo entre ellos) para que la comunicación sea más fluida. No ha sido probado y solo se ha lanzado con las dos tarjetas una cerca de la otra en la misma mesa.
+Algunos expertos indican que es necesario cierta distancia entre los dispositivos (30m y preferiblemente algún obstaculo entre ellos) para que la comunicación sea más fluida. No ha sido probado y solo se ha lanzado con las dos tarjetas en un extremo cada una de un piso.
 
 Por otro lado se hace uso de versiones antiguas de LoRaWAN (1.0.2 y 1.0.3) que tienen problemas de seguridad que se solventan en parte en la última versión (1.1.0), pero no se dispone de librerias para trabajar con ellas.
 

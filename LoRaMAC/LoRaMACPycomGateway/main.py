@@ -18,7 +18,7 @@ from pycoproc_1 import Pycoproc
 #=======================
 #===== CONSTANTS =======
 #=======================
-ENABLE_WIFI = True
+ENABLE_WIFI = False
 WLAN_SSID = "foo" #WiFi SSID
 WLAN_PASS = "123abc123" #WiFi Password
 WLAN_TIMEOUT_MS = 180000
@@ -55,7 +55,7 @@ def setup_rtc(rtc):
 
 def init_lora():
     print("Initializing LoRa (MAC)")
-    lora = LoRa(mode=LoRa.LORA, region=LoRa.EU868)
+    lora = LoRa(mode=LoRa.LORA, region=LoRa.EU868)#, public=False)
     sckt = socket.socket(socket.AF_LORA, socket.SOCK_RAW)
     sckt.setblocking(False)
 
