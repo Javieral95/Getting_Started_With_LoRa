@@ -49,14 +49,14 @@
 /* This APP_EUI must be in little-endian format (LSB), so least-significant-byte
  first. When copying an EUI from ttnctl output, this means to reverse
  the bytes. In this version, APP_EUI can be = 0, but you can config in TTS console. */
-// static const u1_t PROGMEM APPEUI[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+//static const u1_t PROGMEM APPEUI[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 /* DEV_UI is configured in TTS console, should also be in little endian format (LSB), see above. (Warning: Must be in UPPERcase letters) */
-// static const u1_t PROGMEM DEVEUI[8] = {0x7B, 0x1B, 0xDE, 0x2C, 0x7B, 0x4B, 0x18, 0x5F}; //Original (in MSB) was: 0x5F, 0x18, 0x4B, 0x7B, 0x2C, 0xDE, 0x1B, 0x7B
+//static const u1_t PROGMEM DEVEUI[8] = {0x7B, 0x1B, 0xDE, 0x2C, 0x7B, 0x4B, 0x18, 0x5F}; //Original (in MSB) was: 0x5F, 0x18, 0x4B, 0x7B, 0x2C, 0xDE, 0x1B, 0x7B
 
 /* This key should be in big endian format (MSB), can be copied as-is.
  Also configured in TTS console  (Warning: Must be in UPPERcase letters) */
-// static const u1_t PROGMEM APPKEY[16] = {0xBC, 0x21, 0x54, 0x80, 0xC2, 0xD7, 0x90, 0xF2, 0xC7, 0xCB, 0xB2, 0x88, 0xC7, 0x55, 0x33, 0xE7};
+//static const u1_t PROGMEM APPKEY[16] = {0xBC, 0x21, 0x54, 0x80, 0xC2, 0xD7, 0x90, 0xF2, 0xC7, 0xCB, 0xB2, 0x88, 0xC7, 0x55, 0x33, 0xE7};
 
 /************************************************/
 /***********    CHIRPSTACK EXAMPLE    ***********/
@@ -83,6 +83,8 @@ const lmic_pinmap lmic_pins = {
     .dio = {LORA_DIO0, LORA_DIO1, LORA_DIO2},
 };
 
+int channel = 0; //Use if you want to use only one Band's Channel
+
 /****************** End of config ****************/
 bool isLoopRunning = false;
 
@@ -93,6 +95,7 @@ void os_getDevKey(u1_t *buf) { memcpy_P(buf, APPKEY, 16); }
 // static uint8_t payload[5]; //Data to send
 static uint8_t mydata[] = "Hello World!";
 static osjob_t sendjob;
+String freq;
 
 // Schedule TX every this many seconds (might become longer due to duty
 // cycle limitations).
@@ -250,12 +253,29 @@ void LoraWan_startJob()
     LMIC_setClockError(10 * MAX_CLOCK_ERROR / 100);
     //
 
-    LMIC_setupChannel(0, 868500000, DR_RANGE_MAP(DR_SF7, DR_SF7),  BAND_CENTI);      // g-band
-    LMIC_setupChannel(1, 868500000, DR_RANGE_MAP(DR_SF7, DR_SF7), BAND_CENTI);      // g-band
-    LMIC_setupChannel(2, 868500000, DR_RANGE_MAP(DR_SF7, DR_SF7),  BAND_CENTI);      // g-band
-
+    //Warning: Use with caution
+    //disableChannels(channel);
+    
     do_send(&sendjob);
     isLoopRunning = true;
+}
+
+void disableChannels(int selectedChannel){
+    // Define the single channel and data rate (SF) to use
+    int dr = DR_SF7;
+
+    // Disable all channels, except for the one defined above.
+    // FOR TESTING ONLY!
+    for (int i = 0; i < 9; i++)
+    { // For EU; for US use i<71
+        if (i != selectedChannel)
+        {
+            LMIC_disableChannel(i);
+        }
+    }
+
+    // Set data rate (SF) and transmit power for uplink
+    LMIC_setDrTxpow(dr, 14);
 }
 
 // This function is the LoRaWAN data loop: Read data, encrypt and save it to send.
@@ -285,15 +305,16 @@ void do_send(osjob_t *j)
         payload[2] = humidLow;
         payload[3] = humidHigh;
         LMIC_setTxData2(1, payload, sizeof(payload) - 1, 0);*/
-
+        freq = String(LMIC.freq);
         LMIC_setTxData2(1, mydata, sizeof(mydata) - 1, 0);
         Serial.println(F("Packet queued"));
 
         if (isLoopRunning)
         {
+            Serial.println("freq =" + freq);
             printSensorInfoInDisplay(24, 50);
             // Prepare upstream data transmission at the next possible time.
-            printLoraSentInDisplay();
+            printLoraSentInDisplay(freq);
         }
     }
 

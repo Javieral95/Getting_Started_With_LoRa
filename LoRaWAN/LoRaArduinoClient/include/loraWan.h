@@ -20,4 +20,5 @@
 void printHex2(unsigned);
 void onEvent(ev_t ev);
 void LoraWan_startJob();
+void disableChannels(int);
 void do_send(osjob_t *);

@@ -294,7 +294,7 @@ A continuación se detalla el código utilizado para lanzar la Gateway en una Py
 
 Se ha hecho uso de la librería [_NanoGateway py_](https://pycom.io/lopy-lorawan-nano-gateway-using-micropython-and-ttn/) que permite lanzar el gateway en cuestión de minutos.
 
-Nano-Gateway convierte un dispositivo Pycom en un gateway sencillo que escucha tan solo un canal de la banda de frecuencia (monocanal), para escuchar más bandas en Pycom es posible que se precise de un gateway comercial.
+Nano-Gateway convierte un dispositivo Pycom en un **gateway sencillo que escucha tan solo un canal de la banda de frecuencia (monocanal)**, para escuchar más bandas en Pycom es posible que se precise de un gateway comercial.
 
 ### Configuración
 
@@ -369,7 +369,7 @@ _____________________________________
 
 A continuación se detalla lo necesario para hacer funcionar el nodo de clase A usando Arduino.
 
-Teoricamente usa todas los canales disponibles en la banda de frecuencia, pero no esta comprobado que esto sea asi.
+Teoricamente usa todas los canales disponibles en la banda de frecuencia, más adelante se verá una _forma_ de forzará utilizar tan solo uno (no recomendable).
 
 ### Libreria
 
@@ -395,6 +395,51 @@ static const u1_t PROGMEM DEVEUI[8] = {0x7b, 0x6b, 0xff, 0x2c, 0x7b, 0x2c, 0x19,
 static const u1_t PROGMEM APPKEY[16] = {0xbd, 0x21, 0x5a, 0x82, 0xb2, 0xf7, 0x92, 0xf3, 0xc7, 0xcb, 0xb2, 0x88, 0xc7, 0x55, 0x33, 0xe7};
 //Observar que esta en minusculas, en TTS se usarian mayusculas.
 ```
+
+#### Forzar a usar un solo canal
+Como ya se ha visto anteriormente, la placa Pycom corriendo _Nano-Gateway_ solo es capaz de leer en un canal mientras que el dispositivo final Arduino es capaz de emitir en todos los canales de la banda (Por ejemplo, en la banda europea hay 10 canales).
+**Aunque no es recomendable (es posible que se incumpla la regla del 1%)** puede forzarse a utilizar tan solo un canal y una frecuencia solo por temas de desarrollo y pruebas.
+
+Para ello es necesario modificar el código de la biblioteca, más concretamente el archivo `lorabase_eu868.h` (en el caso de usar la frecuencia europea) y forzar de la siguiente manera la frecuencia deseada para emitir (observar como se ha hardcodeado todos los valores para indicar la frecuencia 868.Mhz):
+```
+enum {
+        EU868_F1 = 868500000,      // g1   SF7-12
+        EU868_F2 = 868500000,      // g1   SF7-12 FSK SF7/250
+        EU868_F3 = 868500000,      // g1   SF7-12
+        EU868_F4 = 868500000,      // g2   SF7-12
+        EU868_F5 = 868500000,      // g2   SF7-12
+        EU868_F6 = 868500000,      // g3   SF7-12
+        EU868_J4 = 868500000,      // g2   SF7-12  used during join
+        EU868_J5 = 868500000,      // g2   SF7-12   ditto
+        EU868_J6 = 868500000,      // g2   SF7-12   ditto
+};
+enum {
+        EU868_FREQ_MIN = 868500000,
+        EU868_FREQ_MAX = 868500000
+};
+```
+
+También se debería llamar a la siguiente función al inicio de LoRa (función _LoraWan_startJob()_) pasando por parametro el canal 0:
+```
+void disableChannels(int selectedChannel){
+    // Define the single channel and data rate (SF) to use
+    int dr = DR_SF7;
+
+    // Disable all channels, except for the one defined above.
+    // FOR TESTING ONLY!
+    for (int i = 0; i < 9; i++)
+    { // For EU; for US use i<71
+        if (i != selectedChannel)
+        {
+            LMIC_disableChannel(i);
+        }
+    }
+
+    // Set data rate (SF) and transmit power for uplink
+    LMIC_setDrTxpow(dr, 14);
+}
+```
+Esto haría que la perdida de paquetes se reduzca considerablemente, aunque sigue habiendo algunos que el Gateway no recibe.
 
 ### Despliegue
 
@@ -444,7 +489,10 @@ LMIC_setClockError(MAX_CLOCK_ERROR * 10 / 100);
 _____________________________________
 # Problemática 😥
 
-Como bien se sabe, la tasa de transferencia de LoRA es muy baja, lo que provoca una gran perdida de paquetes y una enorme latencia cuando se envía información (en estos ejemplos se envia cada minuto y se visualiza esta perdida, aproximadamente solo llegan al Gateway uno de cada diez paquetes que el nodo envía), lo que junto a la escasa documentación por ser una nueva técnologia hace que sea algo tediosa trabajar con ella.
+Como bien se sabe, la tasa de transferencia de LoRA es muy baja, lo que provoca una gran perdida de paquetes y una enorme latencia cuando se envía información:
+* En estos ejemplos se envia cada minuto y se visualiza esta perdida, aproximadamente solo llegan al Gateway uno de cada diez paquetes que el nodo envía)
+* Forzar a utilizar una única frecuencia y un único canal mitiga considerablemente la perdida de paquetes pero a coste de perder posible disponibilidad y de romper la regla del 1%.
+* Es altamente posible, por tanto, que trabajando con Gateways comerciales este problema se vea solucionado.
 
 Algunos expertos indican que es necesario cierta distancia entre los dispositivos (30m y preferiblemente algún obstaculo entre ellos) para que la comunicación sea más fluida. No ha sido probado y solo se ha lanzado con las dos tarjetas en un extremo cada una de un piso.
 

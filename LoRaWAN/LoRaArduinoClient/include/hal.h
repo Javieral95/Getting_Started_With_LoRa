@@ -61,7 +61,7 @@ void printSensorInfoInDisplay(float,float);
 void printLoraJoinInfoInDisplay();
 void printLoraJoinErrorInDisplay();
 void printLoraSuccesfullyJoinInDisplay();
-void printLoraSentInDisplay();
+void printLoraSentInDisplay(String);
 void clearDisplay();
 
 #endif

@@ -105,10 +105,12 @@ void printLoraSuccesfullyJoinInDisplay()
     display.display();
 }
 
-void printLoraSentInDisplay()
-{
+void printLoraSentInDisplay(String frecuency)
+{    
+    display.setCursor(INIT_DISPLAY_COLUMN, FOURTH_DISPLAY_ROW);
+    display.print("(Packet sent! In:");
     display.setCursor(INIT_DISPLAY_COLUMN, FIFTH_DISPLAY_ROW);
-    display.print("Packet sent!");
+    display.print(frecuency + " )");
     display.display();
 }
 
