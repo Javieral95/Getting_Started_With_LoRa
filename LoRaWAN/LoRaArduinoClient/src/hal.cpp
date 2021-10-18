@@ -22,12 +22,12 @@ void initAM2315()
 
 am2315_readedData readAM2315Data()
 {
-    float temperature = -1000;
-    float humidity = -1000;
+    float temperature = -327;
+    float humidity = 0;
     am2315_readedData ret;
 
     if (!am2315.readTemperatureAndHumidity(&temperature, &humidity))
-        Serial.println("Failed to read data from AM2315 or don't have sensor!, send -1000 in both values");
+        Serial.println("Failed to read data from AM2315 or don't have sensor!, send minimum values (Temp=-327 & hum=0).");
 
     ret.temp = temperature;
     ret.hum = humidity;

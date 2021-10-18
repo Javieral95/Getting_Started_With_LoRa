@@ -46,17 +46,17 @@
 /*  (Comment it if you want to use Chirpstack)  */
 /************************************************/
 
-/* This APP_EUI must be in little-endian format (LSB), so least-significant-byte
+/* This APP_EUI (or JOIN_EUI) must be in little-endian format (LSB), so least-significant-byte
  first. When copying an EUI from ttnctl output, this means to reverse
  the bytes. In this version, APP_EUI can be = 0, but you can config in TTS console. */
-//static const u1_t PROGMEM APPEUI[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+// static const u1_t PROGMEM APPEUI[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 /* DEV_UI is configured in TTS console, should also be in little endian format (LSB), see above. (Warning: Must be in UPPERcase letters) */
-//static const u1_t PROGMEM DEVEUI[8] = {0x7B, 0x1B, 0xDE, 0x2C, 0x7B, 0x4B, 0x18, 0x5F}; //Original (in MSB) was: 0x5F, 0x18, 0x4B, 0x7B, 0x2C, 0xDE, 0x1B, 0x7B
+// static const u1_t PROGMEM DEVEUI[8] = {0x7B, 0x1B, 0xDE, 0x2C, 0x7B, 0x4B, 0x18, 0x5F}; // Original (in MSB) was: 0x5F, 0x18, 0x4B, 0x7B, 0x2C, 0xDE, 0x1B, 0x7B
 
 /* This key should be in big endian format (MSB), can be copied as-is.
  Also configured in TTS console  (Warning: Must be in UPPERcase letters) */
-//static const u1_t PROGMEM APPKEY[16] = {0xBC, 0x21, 0x54, 0x80, 0xC2, 0xD7, 0x90, 0xF2, 0xC7, 0xCB, 0xB2, 0x88, 0xC7, 0x55, 0x33, 0xE7};
+// static const u1_t PROGMEM APPKEY[16] = {0xBC, 0x21, 0x54, 0x80, 0xC2, 0xD7, 0x90, 0xF2, 0xC7, 0xCB, 0xB2, 0x88, 0xC7, 0x55, 0x33, 0xE7};
 
 /************************************************/
 /***********    CHIRPSTACK EXAMPLE    ***********/
@@ -83,7 +83,19 @@ const lmic_pinmap lmic_pins = {
     .dio = {LORA_DIO0, LORA_DIO1, LORA_DIO2},
 };
 
-int channel = 0; //Use if you want to use only one Band's Channel
+/******* Channel config (only change if you want to uses a single channel) *******/
+const int channel = 0; // Use if you want to use only one Band's Channel.
+const int dr = DR_SF7; // Use if you want to use a specific datarate (The spreading factor mark the dr's value).
+
+/******* Send data config *******/
+
+// Send this to send a Hello world in plain text
+// static uint8_t mydata[] = "Hello World!";
+
+// Send this to send sensor data
+const int neededBytes = 4; // 4 bytes: 2 for temperature and 2 for humidity, can change this value
+static byte mydata[neededBytes];
+static LoraEncoder encoder(mydata);
 
 /****************** End of config ****************/
 bool isLoopRunning = false;
@@ -92,8 +104,6 @@ void os_getArtEui(u1_t *buf) { memcpy_P(buf, APPEUI, 8); }
 void os_getDevEui(u1_t *buf) { memcpy_P(buf, DEVEUI, 8); }
 void os_getDevKey(u1_t *buf) { memcpy_P(buf, APPKEY, 16); }
 
-// static uint8_t payload[5]; //Data to send
-static uint8_t mydata[] = "Hello World!";
 static osjob_t sendjob;
 String freq;
 
@@ -242,6 +252,7 @@ void onEvent(ev_t ev)
     }
 }
 
+// Init LoRaWAN end-device loop
 void LoraWan_startJob()
 {
     // LMIC init
@@ -253,19 +264,18 @@ void LoraWan_startJob()
     LMIC_setClockError(10 * MAX_CLOCK_ERROR / 100);
     //
 
-    //Warning: Use with caution
-    //disableChannels(channel);
-    
+    // Warning: Use with caution
+    //disableChannels(channel, dr);
+
     do_send(&sendjob);
     isLoopRunning = true;
 }
 
-void disableChannels(int selectedChannel){
-    // Define the single channel and data rate (SF) to use
-    int dr = DR_SF7;
-
+// Define the single channel and data rate (SF) to use
+void disableChannels(int selectedChannel, int dr)
+{
     // Disable all channels, except for the one defined above.
-    // FOR TESTING ONLY!
+    // ONLY FOR TESTING AND DEVELOPING!
     for (int i = 0; i < 9; i++)
     { // For EU; for US use i<71
         if (i != selectedChannel)
@@ -288,32 +298,21 @@ void do_send(osjob_t *j)
     }
     else
     {
-        // First, read temperature and humidity
+        // First, if you want to send sensor data: read temperature and humidity and encode it (Using LoRa Serialization library).
         am2315_readedData data = readAM2315Data();
-        /*data.temp = data.temp / 100; // adjust for the f2sflt16 range (-1 to 1)
-        data.hum = data.hum / 100;
-        uint16_t payloadTemp = LMIC_f2sflt16(data.temp);
-        uint16_t payloadHum = LMIC_f2sflt16(data.hum);
+        encoder.writeTemperature(data.temp);
+        encoder.writeHumidity(data.hum);
+        // If you want to send "Hello World" plain text you can comment the two lines above.
 
-        byte tempLow = lowByte(payloadTemp);
-        byte tempHigh = highByte(payloadTemp);
-        byte humidLow = lowByte(payloadHum);
-        byte humidHigh = highByte(payloadHum);
-
-        payload[0] = tempLow;
-        payload[1] = tempHigh;
-        payload[2] = humidLow;
-        payload[3] = humidHigh;
-        LMIC_setTxData2(1, payload, sizeof(payload) - 1, 0);*/
-        freq = String(LMIC.freq);
-        LMIC_setTxData2(1, mydata, sizeof(mydata) - 1, 0);
-        Serial.println(F("Packet queued"));
+        // Send packet
+        LMIC_setTxData2(1, mydata, sizeof(mydata), 0);
 
         if (isLoopRunning)
         {
-            Serial.println("freq =" + freq);
-            printSensorInfoInDisplay(24, 50);
+            freq = String(LMIC.freq);
+            Serial.println("-->Packet queued using freq = " + freq);
             // Prepare upstream data transmission at the next possible time.
+            printSensorInfoInDisplay(data.temp, data.hum);
             printLoraSentInDisplay(freq);
         }
     }

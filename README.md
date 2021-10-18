@@ -115,7 +115,7 @@ _*En los ejemplos por el momento solo se hace uso de OTAA._
 _____________________________________
 ## Servidor 📦
 
-Como ya se ha comentado anteriormente, precisaremos de un servidor. Para este ejemplo se ha usado una versión gratuita de The Things Network y un servidor Chirpstack propiedad de Pycom (próximamente se desplegará uno local).
+Como ya se ha comentado anteriormente, precisaremos de un servidor. Para este ejemplo se ha usado una versión gratuita de The Things Network, un servidor Chirpstack propiedad de Pycom y otro desplegado en local.
 
 ### The Things Network
 
@@ -148,7 +148,9 @@ Crear un Gateway también es sencillo, clica en el botón + y rellena el formula
 
 #### **Payload:**
 
-Para poder leer los datos que ha enviado el nodo al servidor se necesita descodificar el payload, en el caso de TTN lo haremos para cada dispositivo, en la pestaña _Payload Formatters_. En este caso como solo mandamos un hola mundo tenemos la siguiente funcion:
+Para poder leer los datos que ha enviado el nodo al servidor se necesita descodificar el payload, en el caso de TTN lo haremos para cada dispositivo, en la pestaña _Payload Formatters_. Escogemos como _formatter type_ la opción de _javascript_ y:
+
+* En el caso de enviar un simple _hola mundo_ u otro texto plano tenemos la siguiente funcion:
 
 ```
 function Decoder(bytes, port) {
@@ -158,6 +160,8 @@ function Decoder(bytes, port) {
   };
 }
 ```
+* Para mandar información codificada de sensores conectadas al dispositivo, se puede acceder a la funciones de codificación y descodificación de la libreria arduino [**LoRa Serialization**](https://github.com/thesolarnomad/lora-serialization), incluida en el directorio [**/Decoders**](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/Decoders) del presente repositorio.
+  * Archivo ``arduino_ttn.js``
 
 #### **Nota:**
 
@@ -199,7 +203,11 @@ Puedes dejar el resto de valores por defecto.
 
 #### **Payload:**
 
-Para poder leer los datos que ha enviado el nodo al servidor se necesita descodificar el payload, en el caso de Chirpstack lo haremos para cada perfil de dispositivo, en el apartado Device Profiles_ accedemos al perfil que nos interesa (en este caso OTAA) y accedemos a la pestaña _Codec_. En este caso como solo mandamos un hola mundo, podemos escoger en el desplegable _Custom javascript codec functions_ e indicar la siguiente funcion:
+Para poder leer los datos que ha enviado el nodo al servidor se necesita descodificar el payload, en el caso de Chirpstack lo haremos para cada perfil de dispositivo, en el apartado Device Profiles_ accedemos al perfil que nos interesa (en este caso OTAA) y accedemos a la pestaña _Codec_: 
+
+Escogemos en el desplegable _Custom javascript codec functions_ y:
+
+* Para mandar un simple _Hola mundo_ u otro texto plano, podemos indicar la siguiente funcion:
 ```
 function Decode(fPort, bytes) {
     var tempObj = new Object();
@@ -209,6 +217,8 @@ function Decode(fPort, bytes) {
     return tempObj;
 }
 ```
+* Para mandar información codificada de sensores conectadas al dispositivo, se puede acceder a la funciones de codificación y descodificación de la libreria arduino [**LoRa Serialization**](https://github.com/thesolarnomad/lora-serialization), incluida en el directorio [**/Decoders**](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/Decoders) del presente repositorio.
+  * Archivo ``arduino_chirpstark.js``
 
 #### **Nota:**
 
@@ -220,7 +230,7 @@ _____________________________________
 
 Chirpstack proporciona una alternativa opensource para lanzar nuestro propio servidor privado de LoRaWAN, y nos permite hacerlo de forma simple y mediante contenedores.
 
-Es por ello que se ha clonado en el presente repositorio el repositorio propiedad del fundador de Chirpstack ([brocaar](https://github.com/brocaar)) que permite esta operación: [Chirpstack-docker](https://github.com/brocaar/chirpstack-docker). Lo encontramos en la carpeta `chirpstack-docker`.
+Es por ello que se ha clonado en el presente repositorio otro repositorio propiedad del fundador de Chirpstack ([brocaar](https://github.com/brocaar)) que permite esta operación: [Chirpstack-docker](https://github.com/brocaar/chirpstack-docker). Lo encontramos en la carpeta `chirpstack-docker`.
 
 ### Arquitectura
 
@@ -238,6 +248,7 @@ La forma de desplegar el servidor en forma de contenedores nos permite abstraern
    *  Broker MQTT: Servicio de mensajeria interna para los componentes de Chirpstack y gateways (cola de mensajeria, en este caso se usa _Eclipse Mosquitto_).
    *  Redis: Motor de base de datos en memoria que gestiona la información de los dispositivos y las aplicaciones creadas.
    *  PostgreSQL: Almacena la configuración de ChirpStack (organizaciones, aplicaciones, usuarios y el historico de información).
+   *  Pueden añadirse más integraciones: Enviar información a _InfluxDB_, activar eventos para realizar peticiones Http...
 
 ### Configuración (Docker)
 
@@ -277,11 +288,11 @@ Comenzemos a añadir la configuración básica:
   * Se define el tiempo de cada intervalo en el que el Gateway envia su información al servidor.
   * Se define que canales de la banda estan habilitados.
 
-### Añadiendo dispositivos
+### Añadiendo dispositivos y descodificando información
 
 Una vez que se ha configurado el servidor tendremos que registrar nuestros Gateways y crear aplicaciones para registrar nuestros dispositivos finales. Este proceso se realiza de forma análoga al explicado en el apartado anterior de la presente documentación: [Chirpstack (LoRa Server)](###Chirpstack(LoRaServer)).
 
-También se deberá indicar la función que descodifica y codifica la información recibida, también se explica en el apartado anterior.
+Adicionalmente se deberá indicar la función que descodifica y codifica la información recibida, también se explica en el apartado anterior.
   _____________________________________
 
 ## Pycom Gateway 🎧
@@ -315,12 +326,12 @@ GATEWAY_ID = WIFI_MAC[:6] + "ffff" + WIFI_MAC[6:12] #Minusculas: Por ser Chirpst
   * Más información [aquí](https://lora-alliance.org/resource_hub/rp2-1-0-3-lorawan-regional-parameters/).
 
 ```
-NTP = "pool.ntp.org"
+NTP = "es.pool.ntp.org"
 NTP_PERIOD_S = 3600
 
 #WiFi settings (change it)
-WLAN_SSID = "foo" #"pycom-wifi"
-WLAN_PASS = "123abc123" #"securepassword"
+WLAN_SSID = "MyAwesomeWiFi" #"pycom-wifi"
+WLAN_PASS = "CheckOutThisGoodPassword" #"securepassword"
 WLAN_TIMEOUT_MS = 180000
 
 ### LoRaWAN for EU868 ###
@@ -396,7 +407,21 @@ static const u1_t PROGMEM APPKEY[16] = {0xbd, 0x21, 0x5a, 0x82, 0xb2, 0xf7, 0x92
 //Observar que esta en minusculas, en TTS se usarian mayusculas.
 ```
 
-#### Forzar a usar un solo canal
+### Información a enviar
+Bajo toda la configuración de claves, en el fichero ``loraWan.cpp``, podemos escoger si enviar texto plano o datos del sensor de temperatura y humedad. Descomentar la opción deseada:
+```
+/******* Send data config *******/
+
+// Use this to send a Hello world in plain text
+// static uint8_t mydata[] = "Hello World!";
+
+// Use this to send sensor data
+const int neededBytes = 4; // 4 bytes: 2 for temperature and 2 for humidity, can change this value
+static byte mydata[neededBytes];
+static LoraEncoder encoder(mydata);
+```
+Dependiendo de la información enviada se deberá de utilizar una función de descodificación u otra, tal y como se indico en los apartados de The Things Network y Chirpstack.
+### Forzar a usar un solo canal:
 Como ya se ha visto anteriormente, la placa Pycom corriendo _Nano-Gateway_ solo es capaz de leer en un canal mientras que el dispositivo final Arduino es capaz de emitir en todos los canales de la banda (Por ejemplo, en la banda europea hay 10 canales).
 **Aunque no es recomendable (es posible que se incumpla la regla del 1%)** puede forzarse a utilizar tan solo un canal y una frecuencia solo por temas de desarrollo y pruebas.
 
@@ -419,14 +444,13 @@ enum {
 };
 ```
 
-También se debería llamar a la siguiente función al inicio de LoRa (función _LoraWan_startJob()_) pasando por parametro el canal 0:
+También se debería llamar a la siguiente función al inicio de LoRa (función _LoraWan_startJob()_):
 ```
-void disableChannels(int selectedChannel){
-    // Define the single channel and data rate (SF) to use
-    int dr = DR_SF7;
-
+// Define the single channel and data rate (SF) to use
+void disableChannels(int selectedChannel, int dr)
+{
     // Disable all channels, except for the one defined above.
-    // FOR TESTING ONLY!
+    // ONLY FOR TESTING AND DEVELOPING!
     for (int i = 0; i < 9; i++)
     { // For EU; for US use i<71
         if (i != selectedChannel)
@@ -438,6 +462,16 @@ void disableChannels(int selectedChannel){
     // Set data rate (SF) and transmit power for uplink
     LMIC_setDrTxpow(dr, 14);
 }
+```
+El canal y el datarate a configurar se encuentran al comienzo del fichero, en las lineas (Por defecto: canal 0 y el datarate deseado del Spreading Factor 7 cuyo valor es 5):
+  * La banda europea tiene 10 canales, siendo 0 el primero.
+  * El Spreading Factor (Factor de esparcimiento): Cuanto mayor sea el valor mayor distancia se cubrira, pero se tendra menos velocidad de transmisión aún, se indica como SF7B125 a SF15B125.
+  * El Datarate (DR) es un valor que acompaña al spreading Factor.
+  * Más información [aquí](https://lora-alliance.org/resource_hub/rp2-1-0-3-lorawan-regional-parameters/).
+```
+/******* Channel config (only change if you want to uses a single channel) *******/
+const int channel = 0; // Use if you want to use only one Band's Channel.
+const int dr = DR_SF7; // Use if you want to use a specific datarate (The spreading factor mark the dr's value).
 ```
 Esto haría que la perdida de paquetes se reduzca considerablemente, aunque sigue habiendo algunos que el Gateway no recibe.
 
@@ -463,7 +497,7 @@ El evento en el que se envia datos será _EV_TXCOMPLETE_ en la funcion _void onE
         os_setTimedCallback(&sendjob, os_getTime() + sec2osticks(TX_INTERVAL), do_send);
         break;
 ```
-La función, en el mismo fichero, donde se detallará que datos se envían es:
+La función, en el mismo fichero, donde se detallará que datos se envían es **do_send** (Comentar o descomentar las lineas que codifican la información si se desea enviar texto plano):
 ```
 void do_send(osjob_t *j)
 {
@@ -474,10 +508,25 @@ void do_send(osjob_t *j)
     }
     else
     {
-        LMIC_setTxData2(1, mydata, sizeof(mydata) - 1, 0);
-        // Prepare upstream data transmission at the next possible time.
-        Serial.println(F("Packet queued"));
+        // Leer datos de sensor y codificar (Libreria LoRa_Serialization).
+        am2315_readedData data = readAM2315Data();
+        encoder.writeTemperature(data.temp);
+        encoder.writeHumidity(data.hum);
+        // Comentar las dos lineas "encoder" para enviar texto plano
+
+        // Send packet
+        LMIC_setTxData2(1, mydata, sizeof(mydata), 0);
+
+        if (isLoopRunning)
+        {
+            freq = String(LMIC.freq);
+            Serial.println("-->Packet queued using freq = " + freq);
+            // Prepare upstream data transmission at the next possible time.
+            printSensorInfoInDisplay(data.temp, data.hum);
+            printLoraSentInDisplay(freq);
+        }
     }
+
     // Next TX is scheduled after TX_COMPLETE event.
 }
 ```
@@ -496,7 +545,7 @@ Como bien se sabe, la tasa de transferencia de LoRA es muy baja, lo que provoca 
 
 Algunos expertos indican que es necesario cierta distancia entre los dispositivos (30m y preferiblemente algún obstaculo entre ellos) para que la comunicación sea más fluida. No ha sido probado y solo se ha lanzado con las dos tarjetas en un extremo cada una de un piso.
 
-Por otro lado se hace uso de versiones antiguas de LoRaWAN (1.0.2 y 1.0.3) que tienen problemas de seguridad que se solventan en parte en la última versión (1.1.0), pero no se dispone de librerias para trabajar con ellas.
+Por otro lado se hace uso de versiones antiguas de LoRaWAN (1.0.2 y 1.0.3) que tienen problemas de seguridad que se solventan en parte en las siguientes versiones (1.0.4 y 1.1.0), pero no se dispone de librerias para trabajar con ellas.
 
 Esto no quita que esta técnología pueda _pegar fuerte_ debido a no depender de proveedores externos (de comunicaciones y electricidad), siendo una opción ecónomica y muy llamativa para utilizar en proyectos IoT de grandes ciudades o entornos rurales.
 
