@@ -49,18 +49,18 @@
 /* This APP_EUI (or JOIN_EUI) must be in little-endian format (LSB), so least-significant-byte
  first. When copying an EUI from ttnctl output, this means to reverse
  the bytes. In this version, APP_EUI can be = 0, but you can config in TTS console. */
-// static const u1_t PROGMEM APPEUI[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+//static const u1_t PROGMEM APPEUI[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 /* DEV_UI is configured in TTS console, should also be in little endian format (LSB), see above. (Warning: Must be in UPPERcase letters) */
-// static const u1_t PROGMEM DEVEUI[8] = {0x7B, 0x1B, 0xDE, 0x2C, 0x7B, 0x4B, 0x18, 0x5F}; // Original (in MSB) was: 0x5F, 0x18, 0x4B, 0x7B, 0x2C, 0xDE, 0x1B, 0x7B
+//static const u1_t PROGMEM DEVEUI[8] = {0x7B, 0x1B, 0xDE, 0x2C, 0x7B, 0x4B, 0x18, 0x5F}; // Original (in MSB) was: 0x5F, 0x18, 0x4B, 0x7B, 0x2C, 0xDE, 0x1B, 0x7B
 
 /* This key should be in big endian format (MSB), can be copied as-is.
  Also configured in TTS console  (Warning: Must be in UPPERcase letters) */
-// static const u1_t PROGMEM APPKEY[16] = {0xBC, 0x21, 0x54, 0x80, 0xC2, 0xD7, 0x90, 0xF2, 0xC7, 0xCB, 0xB2, 0x88, 0xC7, 0x55, 0x33, 0xE7};
+//static const u1_t PROGMEM APPKEY[16] = {0xBC, 0x21, 0x54, 0x80, 0xC2, 0xD7, 0x90, 0xF2, 0xC7, 0xCB, 0xB2, 0x88, 0xC7, 0x55, 0x33, 0xE7};
 
 /************************************************/
 /***********    CHIRPSTACK EXAMPLE    ***********/
-/*      (Comment it if you want to use TTS)     */
+/*      (Comment it if you want to use TTN)     */
 /************************************************/
 
 /* This APP_EUI must be in little-endian format (LSB), so least-significant-byte

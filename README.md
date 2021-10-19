@@ -13,6 +13,7 @@ El presente proyecto busca realizar una pequeña prueba de concepto de la tecnol
     * [ChirpStack privado en local](###Lanzar-Servidor-Chirpstack-Privado-En-Local)
   * [PyCom Gateway](##Pycom-Gateway)
   * [Arduino End-Device](##Arduino-End-device)
+  * [Integraciones (Http)](#Integraciones-(Http)) 
 - [Problemática](#Problemática)
 - [Fin](#Fin)
 
@@ -100,10 +101,14 @@ Los ejemplo LoRaMAC (se encuentran en la carpeta homónima) resultan funcionales
 El nodo tan solo envía información hardcodeada y el Gateway tan solo se conecta a LoRa y a WiFi, recibe la información Pycom e imprime los datos leidos (aunque tiene implementada la función de enviar los datos a la red).
 
 Se prescinde del uso de un servidor en red.
+
+Para saber más puedes acceder a la carpeta [**/LoRaMAC**](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/LoRaMAC).
 # LoRaWAN ⚙️
 
 Para el uso de estos ejemplos (que resultan funcionales haciendo uso de un dispositivo final Arduino y de un Gateway Pycom) se precisa de un servidor para visualizar los datos. En este ejemplo se ha abordado el uso de **The Things Network** y de **Chirpstack** (anteriormente conocido como LoRaServer).
 * **Funciona para las versiones LoRa 1.0.2 y 1.0.3.**
+
+Para saber más puedes acceder a la carpeta [**/LoRaWAN**](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/LoRaWAN) y después seguir consultando esta documentación.
 
 ### Tipos de autenticación LoRaWAN
 
@@ -534,6 +539,72 @@ void do_send(osjob_t *j)
 **Nota**: Se sufría un error que impedia al nodo recibir paquetes de vuelta, por lo que era imposible autenticar el dispositivo frente al servidor. Se ha tenido que añadir en el _setup()_ del cliente (más concretamente en la función _LoraWan_startJob()_ del archivo _loraWan.cpp_) la siguiente linea de código que aumenta en un 10% el error máximo del reloj:
 ```
 LMIC_setClockError(MAX_CLOCK_ERROR * 10 / 100);
+```
+_____________________________________
+## Integraciones (Http)
+
+Tanto Chirpstack como The Things Network ofrecen una serie de integraciones enviar los datos que recibe nuestro servidor a otros servicios. Por ejemplo: Podemos enviar los datos a una base de datos InfluxDB, hacer uso de MQTT, conectarnos a AWS services o a Azure... 
+
+En este apartado se verá un caso práctico en el que podemos usar la integración de **HTTP** (Webhooks en The Things Network) para enviar los datos que envian nuestros dispositivos y que recibe nuestro servidor a una aplicación propia.
+
+Para acceder a las integraciones:
+* Chirpstack: Accede al listado de _aplicaciones_ y clica en la aplicación que deseas integrar, en la pestaña _integrations_ verás el listado de aplicaciones con las que podemos conectarnos. En este caso nos interesa _HTTP_.
+* The Things Network: Accede a la pestaña de aplicaciones y selecciona la que deseas integrar. En el menú izquierdo verás una opción de _Integrations_ donde se desplegarán todos los servicios a los que podemos conectarnos. En este caso nos interesa _Webhooks_, clicamos en esta opción y seleccionamos _Add webhook_.
+
+### Configurar integración Http
+
+En ambos servidores esta integración funciona de manera similar: Lanza un evento cada vez que un dispositivo de la aplicación envia información (en el caso de TTN deberemos marcar la casilla de _Uplink message_) y, con dicha información, se lanza una petición Http de tipo POST a la Url que indiquemos.
+
+* Escogeremos un formato (_Payload Marshaled_) de tipo **JSON**.
+* Añaderemos las cabeceras _Accept_ y _Content-Type_, ambas con valor _application/json_ (también podremos añadir la cabecera con el token de autenticación si fuese necesario).
+* Añaderemos como Endpoint la URL a la que buscamos que el servidor lance una petición POST.
+  * En el caso de The Things network podemos definir una URL base y, cada tipo de mensaje que lance el evento (casillas activadas) una uri diferente.
+  * En el caso de Chirpstack podemos definir más de una URL, separandolas por el caracter " , ".
+
+**NOTA:** Una buena práctica, bien para comprobar que el evento se lanza de forma correcta o bien para visualizar el formato de los datos es acceder al servicio [PostBin](https://postb.in/), donde podemos crear un _bin_ (URL temporal para recibir peticiones).
+
+**NOTA2:** Si la aplicación a la que lanzarás la petición esta albergada en _localhost_ y el servidor Chirpstack también (de forma Dockerizada como se muestra en esta documentación) tendrás que indicar la URL de la siguiente forma: 
+```
+http://host.docker.internal:PUERTO/uri
+```
+### Obtener datos en aplicación
+
+Esta documentación solo abarca el uso de Chirpstack y TTN no se encuentra documentado para enviar datos (tiene un formato diferente en la petición).
+
+Si se han descodificado los datos con los ejemplos del presente repositorio (carpeta ``\Decoders``), obtendremos un cuerpo en la petición similar al siguiente:
+```
+{
+    "applicationID": 0,
+    "applicationName": "Name",
+    "deviceName": "DeviceName",
+    "devEUI": "BYTES_EUI",
+    "txInfo": [Object object],
+    "adr": true,
+    "dr": 5,
+    "fCnt": 24,
+    "fPort": 1,
+    "data": "DATA_WITHOUT_DECODE",
+    "objectJSON": {
+      "data":"DATA_WITHOUT_DECODE==",
+      "decodedData":{
+        "humidity":37,"temperature":23
+      },
+      "message":"Informacion recibida del nodo"
+    },
+    "tags": [Object object],
+    "confirmedUplink": false,
+    "devAddr": "BYTES_DEV_ADDR"
+}
+```
+**ObjectJSON** es el objeto retornado por nuestra función _Decoder_.
+
+Para leerlo, por ejemplo en una aplicación JavaScript bastaría con hacer algo parecido a lo siguiente (más en el archivo ``/Decoders/arduino_ChirpstackIntegration.js``)
+```
+const { deviceName, objectJSON, devAddr} = req.body;
+var sensorData = JSON.parse(objectJSON);
+
+var temperature = sensorData.decodedData.temperature;
+var humidity = sensorData.decodedData.humidity;
 ```
 _____________________________________
 # Problemática 😥

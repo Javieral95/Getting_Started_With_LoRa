@@ -4,6 +4,8 @@ Se facilitan dos ficheros javascript para facilitar la tarea de descodificación
 
 Adicionalmente también pueden indicarse funciones de codificación, pero no son abordadas en el presente proyecto.
 
+Descodificar los datos recibidos sirve para poder visualizar de la forma deseada los datos desde el servidor (o para enviarlos a otras aplicaciones gracias a las integraciones que ofrece tanto Chirpstack como The Things Network).
+
 ### ¿Donde se añaden los _Decoders_?
 
 Los decoders, tal y como indica la documentación general del presente proyecto, se indican en:
