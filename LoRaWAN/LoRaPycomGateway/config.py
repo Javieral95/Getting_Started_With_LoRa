@@ -19,7 +19,7 @@ import ubinascii
 
 ## FOR CHIRPSTARK ##
 WIFI_MAC = ubinascii.hexlify(machine.unique_id())
-SERVER = '192.168.61.252'#'loraserver.pycom.io' #(or url of your server)
+SERVER = 'loraserver.pycom.io' #(or url of your server)
 GATEWAY_ID = WIFI_MAC[:6] + "ffff" + WIFI_MAC[6:12]
 ######################################
 
