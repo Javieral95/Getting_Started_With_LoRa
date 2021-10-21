@@ -233,7 +233,7 @@ Fijese en que todas las direcciones hexadecimales de Chirpstack se encuentran en
 
 _____________________________________
 
-## Lanzar servidor Chirpstack privado en local 💻
+## Lanzar servidor Chirpstack privado en local
 
 Chirpstack proporciona una alternativa opensource para lanzar nuestro propio servidor privado de LoRaWAN, y nos permite hacerlo de forma simple y mediante contenedores.
 
@@ -563,7 +563,7 @@ Para acceder a las integraciones:
 * The Things Network: Accede a la pestaña de aplicaciones y selecciona la que deseas integrar. En el menú izquierdo verás una opción de _Integrations_ donde se desplegarán todos los servicios a los que podemos conectarnos.
 ## Http
 
-En caso de usar Chirpstack nos interesa seleccionar _HTTP_ en el menú de itegraciones, si de lo contrario usamos The Things Network seleccionaremos _Webhooks_ y después _Add webhook_
+En caso de usar Chirpstack nos interesa seleccionar _HTTP_ en el menú de integraciones, si de lo contrario usamos The Things Network seleccionaremos _Webhooks_ y después _Add webhook_
 
 ### Configurar integración Http
 
@@ -818,7 +818,7 @@ Y es lo que buscamos leer en la siguiente función:
 **object** es el objeto retornado por nuestra función _Decoder_.
 
 _____________________________________
-# Problemática 😥
+# Problemática
 
 Como bien se sabe, la tasa de transferencia de LoRA es muy baja, lo que provoca una gran perdida de paquetes y una enorme latencia cuando se envía información:
 * En estos ejemplos se envia cada minuto y se visualiza esta perdida, aproximadamente solo llegan al Gateway uno de cada diez paquetes que el nodo envía)
