@@ -1,0 +1,19 @@
+user chirpstack_gw
+topic write gateway/+/event/+
+topic read gateway/+/command/+
+
+user chirpstackns
+topic read gateway/+/event/+
+topic write gateway/+/command/+
+
+user chirpstack_as
+topic write application/+/device/+/event/+
+topic read application/+/device/+/command/+
+
+user bob
+topic read application/123/device/+/event/+
+topic write application/123/device/+/command/+
+
+user nodeApp
+topic read application/+/device/#
+topic write application/+/device/#

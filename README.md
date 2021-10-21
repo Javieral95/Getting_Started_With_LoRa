@@ -13,7 +13,9 @@ El presente proyecto busca realizar una pequeña prueba de concepto de la tecnol
     * [ChirpStack privado en local](###Lanzar-Servidor-Chirpstack-Privado-En-Local)
   * [PyCom Gateway](##Pycom-Gateway)
   * [Arduino End-Device](##Arduino-End-device)
-  * [Integraciones (Http)](#Integraciones-(Http)) 
+- [Integraciones LoRaWAN](#Integraciones-LoRaWAN) 
+  * [Http](#Http) 
+  * [MQTT](#MQTT) 
 - [Problemática](#Problemática)
 - [Fin](#Fin)
 
@@ -94,7 +96,7 @@ Ambos dispositivos disponen de una antera LoRa conectada a ellos.
 
 _____________________________________
 
-# LoRaMAC 🔩
+# LoRaMAC
 
 Los ejemplo LoRaMAC (se encuentran en la carpeta homónima) resultan funcionales haciendo uso de un dispositivo final Arduino y un Gateway PyCom. 
 
@@ -103,7 +105,7 @@ El nodo tan solo envía información hardcodeada y el Gateway tan solo se conect
 Se prescinde del uso de un servidor en red.
 
 Para saber más puedes acceder a la carpeta [**/LoRaMAC**](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/LoRaMAC).
-# LoRaWAN ⚙️
+# LoRaWAN
 
 Para el uso de estos ejemplos (que resultan funcionales haciendo uso de un dispositivo final Arduino y de un Gateway Pycom) se precisa de un servidor para visualizar los datos. En este ejemplo se ha abordado el uso de **The Things Network** y de **Chirpstack** (anteriormente conocido como LoRaServer).
 * **Funciona para las versiones LoRa 1.0.2 y 1.0.3.**
@@ -118,7 +120,7 @@ Existen dos tipos de autenticación en LoRaWAN:
 
 _*En los ejemplos por el momento solo se hace uso de OTAA._
 _____________________________________
-## Servidor 📦
+## Servidor
 
 Como ya se ha comentado anteriormente, precisaremos de un servidor. Para este ejemplo se ha usado una versión gratuita de The Things Network, un servidor Chirpstack propiedad de Pycom y otro desplegado en local.
 
@@ -165,8 +167,8 @@ function Decoder(bytes, port) {
   };
 }
 ```
-* Para mandar información codificada de sensores conectadas al dispositivo, se puede acceder a la funciones de codificación y descodificación de la libreria arduino [**LoRa Serialization**](https://github.com/thesolarnomad/lora-serialization), incluida en el directorio [**/Decoders**](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/Decoders) del presente repositorio.
-  * Archivo ``arduino_ttn.js``
+* Para mandar información codificada de sensores conectadas al dispositivo, se puede acceder a la funciones de codificación y descodificación de la libreria arduino [**LoRa Serialization**](https://github.com/thesolarnomad/lora-serialization), incluida en el directorio [**/Decoders-Integrations**](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/Decoders-Integrations) del presente repositorio.
+  * Archivo ``arduino_ttn_decoder.js``
 
 #### **Nota:**
 
@@ -222,8 +224,8 @@ function Decode(fPort, bytes) {
     return tempObj;
 }
 ```
-* Para mandar información codificada de sensores conectadas al dispositivo, se puede acceder a la funciones de codificación y descodificación de la libreria arduino [**LoRa Serialization**](https://github.com/thesolarnomad/lora-serialization), incluida en el directorio [**/Decoders**](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/Decoders) del presente repositorio.
-  * Archivo ``arduino_chirpstark.js``
+* Para mandar información codificada de sensores conectadas al dispositivo, se puede acceder a la funciones de codificación y descodificación de la libreria arduino [**LoRa Serialization**](https://github.com/thesolarnomad/lora-serialization), incluida en el directorio [**/Decoders-Integrations**](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/Decoders-Integrations) del presente repositorio.
+  * Archivo ``arduino_chirpstark_decoder.js``
 
 #### **Nota:**
 
@@ -300,7 +302,7 @@ Una vez que se ha configurado el servidor tendremos que registrar nuestros Gatew
 Adicionalmente se deberá indicar la función que descodifica y codifica la información recibida, también se explica en el apartado anterior.
   _____________________________________
 
-## Pycom Gateway 🎧
+## Pycom Gateway
 
 A continuación se detalla el código utilizado para lanzar la Gateway en una PyCom (Fipy con Pytrack). Este código se encuentra en [_LoRaWAN/LoRaPycomGateway_](https://github.com/Javieral95/Getting_Started_With_LoRa/tree/main/LoRaWAN/LoRaPycomGateway).
 * [_Config_](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/LoRaWAN/LoRaPycomGateway/config.py): En este archivo es el archivo configurable para hacer funcioanr tu gateway.
@@ -355,6 +357,15 @@ def get_gateway_id():
     return GATEWAY_ID
 ```
 
+**NOTA:** Si conectas tu gateway a una red local sin conexión a internet, esta retornará un error a la hora de sincronizar los relojes. Puedes _salir del paso_ comentando las siguientes lineas de código en la función _start(self)_ del fichero ``nanogateway.py`` tal y como muestra el siguiente ejemplo:
+```
+# get a time sync
+self._log('Syncing time with {} ...', self.ntp_server)
+#self.rtc.ntp_sync(self.ntp_server, update_period=self.ntp_period)
+#while not self.rtc.synced():
+#    utime.sleep_ms(50)
+self._log("RTC NTP sync complete")
+```
 ### Despliegue
 
 Varias funciones del archivo main no son utilizadas, tan solo es necesario lanzar el gateway de la siguiente manera y ya estará funcionando.
@@ -381,7 +392,7 @@ def init_loraWAN_gateway():
 La Pycom mantendra la luz roja hasta que consiga conectarse, una vez escuche peticiones de dispositivos parpadeará su led en color verde.
 
 _____________________________________
-## Arduino End-device 📡
+## Arduino End-device
 
 A continuación se detalla lo necesario para hacer funcionar el nodo de clase A usando Arduino.
 
@@ -541,15 +552,18 @@ void do_send(osjob_t *j)
 LMIC_setClockError(MAX_CLOCK_ERROR * 10 / 100);
 ```
 _____________________________________
-## Integraciones (Http)
+# Integraciones LoRaWAN
 
 Tanto Chirpstack como The Things Network ofrecen una serie de integraciones enviar los datos que recibe nuestro servidor a otros servicios. Por ejemplo: Podemos enviar los datos a una base de datos InfluxDB, hacer uso de MQTT, conectarnos a AWS services o a Azure... 
 
-En este apartado se verá un caso práctico en el que podemos usar la integración de **HTTP** (Webhooks en The Things Network) para enviar los datos que envian nuestros dispositivos y que recibe nuestro servidor a una aplicación propia.
+En este apartado se verá un caso práctico en el que podemos usar la integración de **HTTP** (Webhooks en The Things Network) y **MQTT** para enviar los datos que envian nuestros dispositivos y que recibe nuestro servidor a una aplicación propia.
 
 Para acceder a las integraciones:
-* Chirpstack: Accede al listado de _aplicaciones_ y clica en la aplicación que deseas integrar, en la pestaña _integrations_ verás el listado de aplicaciones con las que podemos conectarnos. En este caso nos interesa _HTTP_.
-* The Things Network: Accede a la pestaña de aplicaciones y selecciona la que deseas integrar. En el menú izquierdo verás una opción de _Integrations_ donde se desplegarán todos los servicios a los que podemos conectarnos. En este caso nos interesa _Webhooks_, clicamos en esta opción y seleccionamos _Add webhook_.
+* Chirpstack: Accede al listado de _aplicaciones_ y clica en la aplicación que deseas integrar, en la pestaña _integrations_ verás el listado de aplicaciones con las que podemos conectarnos.
+* The Things Network: Accede a la pestaña de aplicaciones y selecciona la que deseas integrar. En el menú izquierdo verás una opción de _Integrations_ donde se desplegarán todos los servicios a los que podemos conectarnos.
+## Http
+
+En caso de usar Chirpstack nos interesa seleccionar _HTTP_ en el menú de itegraciones, si de lo contrario usamos The Things Network seleccionaremos _Webhooks_ y después _Add webhook_
 
 ### Configurar integración Http
 
@@ -571,7 +585,7 @@ http://host.docker.internal:PUERTO/uri
 
 Esta documentación solo abarca el uso de Chirpstack y TTN no se encuentra documentado para enviar datos (tiene un formato diferente en la petición).
 
-Si se han descodificado los datos con los ejemplos del presente repositorio (carpeta ``\Decoders``), obtendremos un cuerpo en la petición similar al siguiente:
+Si se han descodificado los datos con los ejemplos del presente repositorio (carpeta ``\Decoders-Integrations``), obtendremos un cuerpo en la petición similar al siguiente:
 ```
 {
     "applicationID": 0,
@@ -598,14 +612,211 @@ Si se han descodificado los datos con los ejemplos del presente repositorio (car
 ```
 **ObjectJSON** es el objeto retornado por nuestra función _Decoder_.
 
-Para leerlo, por ejemplo en una aplicación JavaScript bastaría con hacer algo parecido a lo siguiente (más en el archivo ``/Decoders/arduino_ChirpstackIntegration.js``)
+Para leerlo, por ejemplo en una aplicación JavaScript bastaría con hacer algo parecido a lo siguiente (más en el archivo ``/Decoders-Integrations/arduino_Chirpstack_Http_Integration.js``)
 ```
 const { deviceName, objectJSON, devAddr} = req.body;
 var sensorData = JSON.parse(objectJSON);
-
+//devAddr esta codificado!
 var temperature = sensorData.decodedData.temperature;
 var humidity = sensorData.decodedData.humidity;
 ```
+
+## MQTT
+
+Realmente, a no ser que usemos MQTTS (Mqtt con TLS) no será necesario acceder a ninguna integración desde la aplicación web del servidor.
+
+En este ejemplo suscribiremos nuestra aplicación al topico al que nuestro dispositivo final enviará los datos.
+
+Si nuestra aplicación esta lanzada en local y el servidor Chirpstack también (dockerizado como hemos mostrado en esta documentación), el host del broker será la IP de la máquina [WSL](https://docs.microsoft.com/es-es/windows/wsl/install). Para conocer este dato lanzaremos:
+```
+wsl hostname -I
+```
+También habrá que realizar algunas configuraciones lanzando los siguientes comandos (1883 es el puerto de Mosquitto, si se usa otro modificarlo):
+```
+netsh interface portproxy add v4tov4 listenport=1883 listenaddress=0.0.0.0 connectport=1883 connectaddress=127.0.0.1
+```
+
+### Contraseñas y Acls
+
+Podemos usar MQTT tal y como viene en el ejemplo de docker, con el parametro _anonymous_ con valor _true_ (sin usar ningún tipo de contraseña o lista de usuarios) o podemos configurar un listado de usuarios (cada uno con los topicos que pueden leer o escribir) con sus respectivas contraseñas (como indica la siguiente [documentación](https://www.chirpstack.io/project/guides/mqtt-authentication/)).
+
+Para ello, lanzaremos los siguientes comandos (podemos lanzarlos desde _WSL_), cada uno de ellos nos pedirá que introduzcamos una contraseña para cada usuario (en este ejemplo se ha usado _pass_ para todos):
+```
+# Create a password file, with users chirpstack_gw, chirpstack_ns, chirpstack_as, bob and nodeApp
+sudo mosquitto_passwd -c /etc/mosquitto/passwd chirpstack_gw
+sudo mosquitto_passwd /etc/mosquitto/passwd chirpstack_ns
+sudo mosquitto_passwd /etc/mosquitto/passwd chirpstack_as
+sudo mosquitto_passwd /etc/mosquitto/passwd bob
+sudo mosquitto_passwd /etc/mosquitto/passwd nodeApp
+
+# Optional, Secure the password file
+sudo chmod 600 /etc/mosquitto/passwd
+```
+Esto nos creará el fichero ``passwd`` que contendrá todos los usuarios y contraseñas, ahora podremos configurar un listado de _acls_ en un fichero homónimo como el siguiente:
+```
+user chirpstack_gw
+topic write gateway/+/event/+
+topic read gateway/+/command/+
+
+user chirpstackns
+topic read gateway/+/event/+
+topic write gateway/+/command/+
+
+user chirpstack_as
+topic write application/+/device/+/event/+
+topic read application/+/device/+/command/+
+
+user bob
+topic read application/123/device/+/event/+
+topic write application/123/device/+/command/+
+
+user nodeApp
+topic read application/+/device/#
+topic write application/+/device/#
+```
+
+Ahora, deberemos modificar la configuración del servidor para utilizar estas credenciales modificando los ficheros albergados en ``/chirpstack-docker/configuration``:
+* _chirpstack-application-server.toml_:
+  ```
+  [application_server.integration.mqtt]
+  server="tcp://mosquitto:1883"
+  username="chirpstack_as"
+  password="pass"
+  ```
+* _chirpstack-gateway-bridge.toml_:
+  ```
+  [integration.mqtt.auth.generic]
+  servers=["tcp://mosquitto:1883"]
+  username="chirpstack_gw"
+  password="pass"
+  ```
+* _chirpstack-network-server.toml_:
+  ```
+  [network_server.gateway.backend.mqtt]
+  server="tcp://mosquitto:1883"
+  username="chirpstack_ns"
+  password="pass"
+  ```
+* _mosquitto.conf_:
+  ```
+  listener 1883
+  password_file /mosquitto/config/passwd
+  acl_file /mosquitto/config/acls
+  allow_anonymous false
+  ```
+  * Adicionalmente, en el archivo _docker-compose.yml_ de la carpeta raiz del proyecto recordar añadir los volumenes de los archivos _passwd_ y _acls_, tal que:
+    ```
+    mosquitto:
+      image: eclipse-mosquitto:2
+      ports:
+        - 1883:1883
+      volumes: 
+        - ./configuration/eclipse-mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+        - ./configuration/eclipse-mosquitto/passwd:/mosquitto/config/passwd
+        - ./configuration/eclipse-mosquitto/acls:/mosquitto/config/acls
+    ```
+
+### Suscribirnos con nuestra aplicación
+
+En este ejemplo usaremos una aplicación NodeJS para conectarnos a nuestro servidor local Chirpstack dockerizado. Todo el código podemos encontrarlo en el archivo ``/Decoders-Integrations/arduino_Chirpstack_mqtt_Integration.js``.
+
+Lo primero, tendremos que instalar el paquete [mqtt](https://www.npmjs.com/package/mqtt)
+```
+npm install mqtt --save
+```
+Con él, ya podremos conectarnos al broker:
+```
+var mqtt = require('mqtt')
+const host = 'WSL_IP'
+const port = '1883' //or your port
+const clientId = 'mqtt_NodeApp_' + Math.random().toString(16).slice(3)
+
+const connectUrl = 'mqtt://' + host + ':' + port;
+
+const client = mqtt.connect(connectUrl, {
+    clientId,
+    clean: true,
+    //username: "nodeApp", //Descomentar si usamos contraseñas y acls
+    //password: "pass", //Colocar el usuario y contraseña correspondiente
+    connectTimeout: 4000,
+    reconnectPeriod: 1000,
+    debug: true
+  })
+```
+Y suscribirnos al topico deseado (el caracter _#_ es un wildcard multinivel, significa que leemos cualquier subtopico, mientras que el caracter _+_ es un wildcard de un solo nivel).
+```
+const chirpstackApplicationID = 1; //Check url, for example: http://localhost:8080/#/organizations/1/applications. /1/ is the ID
+const chirpstackDeviceID = "DEV_EUI";
+const chirpstackReadAppTopic = "application/" + chirpstackApplicationID + "/device/#";
+const chirpstackWriteAppTopic = "application/" + chirpstackApplicationID + "/device/"+chirpstackDeviceID+"/EXAMPLE";
+```
+Usaremos los siguientes eventos para ello:
+```
+//Evento al conectarse
+client.on('connect', function () {
+    console.log("Connected")
+    client.subscribe(chirpstackReadAppTopic, function (err) {
+      if (!err) {
+        console.log("Subscribed to topic: "+chirpstackReadAppTopic)
+        //client.publish(chirpstackWriteAppTopic, 'Hello mqtt') //Podemso enviar un mensaje para debugear
+      }
+      else {
+        console.log("Error in connection:")
+        console.log(err)
+      }
+    })
+  })
+  
+  //Evento al recibir un mensaje
+  client.on('message', function (topic, message) {
+    // El mensaje es un buffer, convertimos a String.
+    var stringMsg = message.toString();
+    console.log(topic + " - " + stringMsg)  
+    insertSensorEntry_Mqtt(topic, stringMsg); //Funcion que lee el mensaje e inserta en base de datos
+  })
+```
+
+### Añadiendo MQTTS
+
+En ambos servidores (Chirpstack y The Things Network) la integración tiene por nombre _MQTT_, eso sí, antes de realizar ninguna integración debemos configurar los certificados.
+
+A continuación se documentará como realizar la integración con MQTT en un servidor local de Chirpstack (para más info revisar el apartado [ChirpStack privado en local](###Lanzar-Servidor-Chirpstack-Privado-En-Local) de esta documentación).
+
+#### Pre-Requisitos y configuración de certificados en Chirpstack
+
+Antes de generar los certificados, debemos tener instalado [CFSSL & CFSSLJSON](https://github.com/cloudflare/cfssl). Tras ello, clonaremos el siguiente repositorio propiedad del creador de Chirpstack y seguiremos los pasos de su documentación: [Chirpstack-Certificates](https://github.com/brocaar/chirpstack-certificates).
+
+**NOTA:** Si se usa Windows, instalar los pre-requisitos en la máquina [WSL](https://docs.microsoft.com/es-es/windows/wsl/install) pues se necesitará hacer uso del comando ``make``.
+
+#### Añadiendo los certificados
+
+Colocamos la carpeta ``certs`` generada con el proyecto ``Chirpstack-Certificates`` en nuestro proyecto ``Chirpstack-Docker``. Después modificados el archivo ``docker-compose.yml`` para añadir a cada contenedor el volumen que contendrá los certificados correspondientes.
+
+Seguimos siguiendo la documentación del proyecto ``Chirpstack-Certificates`` para realizar todas las modificaciones pertinentes en la configuración del servidor:
+
+### Leyendo los datos
+
+Como hemos visto anteriormente, el evento que se lanza al recibir un mensaje llama a una función que lee el mensaje recibido y lo descodifica.
+
+El formato del mensaje recibido (si hemos usado los descodificadores del ejemplo) es una cadena de texto con el siguiente contenido:
+```
+    {"applicationID":"1","applicationName":"APP_NAME","deviceName":"DEV_NAME","devEUI":"DEV_ADDRESS", "txInfo":{"frequency":868500000,"dr":5},"adr":true,"fCnt":2, "fPort":1,"data":"DATA","object":{"data":"DATA","decodedData":{"humidity":0,"temperature":-327},"message":"Informacion recibida del nodo"}}
+```
+Y es lo que buscamos leer en la siguiente función:
+```
+  function insertSensorEntry_Mqtt(topic, msg){
+    console.log("INSERTAMOS DATO DE SENSOR RECIBIDO POR MQTT EN TOPICO: "+topic);
+    const parseMsg = JSON.parse(msg); //Recordar haber hecho un ToString al buffer antes!
+
+    var deviceName = parseMsg.deviceName;
+    var devAddr = parseMsg.devEUI; //No codificado
+    var temperature = parseMsg.object.decodedData.temperature;
+    var humidity = parseMsg.object.decodedData.humidity;
+    var success = true;
+  }
+```
+**object** es el objeto retornado por nuestra función _Decoder_.
+
 _____________________________________
 # Problemática 😥
 

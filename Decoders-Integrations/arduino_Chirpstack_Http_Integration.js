@@ -19,7 +19,7 @@ insertSensorEntry: async (req, res) => {
             const sensors = db.collection("THE COLLECTION NAME");
 
             var tmp = SensorData({
-                sensor_id: devAddr,
+                sensor_id: devAddr, //Is encoded!
                 sensor_name: deviceName,
                 temperature: temperature,
                 humidity: humidity,

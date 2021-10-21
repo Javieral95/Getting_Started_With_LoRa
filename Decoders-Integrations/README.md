@@ -1,6 +1,6 @@
-# JavaScript Decoders for TTN and Chirpstack
+# Integrations and JavaScript Decoders for TTN and Chirpstack
 
-Se facilitan dos ficheros javascript para facilitar la tarea de descodificación de información en el lado del servidor tanto para _The Things Network_ como para _Chirpstack_.
+Se facilitan dos ficheros javascript para facilitar la tarea de descodificación de información en el lado del servidor tanto para _The Things Network_ como para _Chirpstack_. También se facilitan otros dos ficheros javascript para hacer uso de las integraciones Mqtt y Http para leer datos a través de estos dos protocolos.
 
 Adicionalmente también pueden indicarse funciones de codificación, pero no son abordadas en el presente proyecto.
 
