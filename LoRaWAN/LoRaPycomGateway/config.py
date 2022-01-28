@@ -19,7 +19,7 @@ import ubinascii
 
 ## FOR CHIRPSTARK ##
 WIFI_MAC = ubinascii.hexlify(machine.unique_id())
-SERVER = 'loraserver.pycom.io' #(or url of your server)
+SERVER = '192.168.10.140'#'loraserver.pycom.io' #(or url of your server)
 GATEWAY_ID = WIFI_MAC[:6] + "ffff" + WIFI_MAC[6:12]
 ######################################
 
@@ -29,8 +29,8 @@ NTP = "es.pool.ntp.org"
 NTP_PERIOD_S = 3600
 
 #WiFi settings (change it)
-WLAN_SSID = 'foo' #"pycom-wifi"
-WLAN_PASS = '123abc123' #"securepassword"
+WLAN_SSID = "foo"
+WLAN_PASS = "123abc123"
 WLAN_TIMEOUT_MS = 180000
 
 ### LoRaWAN for EU868 ###

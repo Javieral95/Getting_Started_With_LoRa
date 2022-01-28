@@ -31,7 +31,6 @@ from nanogateway import NanoGateway
 #===== CONSTANTS =======
 #=======================
 ENABLE_WIFI = True
-
 LOOP_INTERVAL = 1
 
 

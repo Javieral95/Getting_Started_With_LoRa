@@ -144,9 +144,9 @@ class NanoGateway:
 
         # get a time sync
         self._log('Syncing time with {} ...', self.ntp_server)
-        self.rtc.ntp_sync(self.ntp_server, update_period=self.ntp_period)
-        while not self.rtc.synced():
-            utime.sleep_ms(50)
+        #self.rtc.ntp_sync(self.ntp_server, update_period=self.ntp_period)
+        #while not self.rtc.synced():
+        #    utime.sleep_ms(50)
         self._log("RTC NTP sync complete")
 
         # get the server IP and create an UDP socket

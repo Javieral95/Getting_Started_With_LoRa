@@ -45,8 +45,12 @@ Podemos comunicar a los dispositivos mediante LoRaMAC (también conocido mediant
 Este enfoque utiliza una topología en estrella.
 
 Por otro lado, en **LoRaWAN**, también se tienen **tres tipos de dispositivos finales o nodos**:
-* De clase **A** (Baseline): La más soportada y la que supone mayor ahorro de energia (el dispositivo pasa a modo escuchar o Ventana RX solo después de enviar datos al gateway), esto hace que solo pueda escuchar algo después de enviar información: Utiles para enviar información en intervalos separados de tiempo o cuando se reciba un evento (Ej: La temperatura bajo de 21º).
-* De clase **B** (Beacon): Tiene soporte para recibir paquetes del gateway, permite más espacios entre los ascendentes (enviados) y descendentes (recibidos). Se reduce la latencia de mensajes pero consume más energia.
+* De clase **A** (Baseline): La más soportada y la que supone mayor ahorro de energia (el dispositivo pasa a modo escuchar o Ventana RX solo después de enviar datos al gateway), esto hace que solo pueda escuchar algo después de enviar información: 
+    * Se abren dos ventanas de escucha, previo *delay* después del envío, (RX1 y, si no se obtiene respuesta, RX2), si no hay confirmación en esas dos ventanas se pierde la oportunidad de obtener el mensaje hasta el siguiente mensaje. 
+    * Utiles para enviar información en intervalos separados de tiempo o cuando se reciba un evento (Ej: La temperatura bajo de 21º).
+* De clase **B** (Beacon): Tiene soporte para recibir paquetes del gateway de forma periodica, permite más espacios entre los ascendentes (enviados, uplinks) y descendentes (recibidos, downlink). 
+    * Se permite abrir ventanas de forma periodica en horas programadas, para esto el gateway envía *beacons* (balizas para comprobar cuando el dispositivo esta en modo escucha).
+    * Se reduce la latencia de mensajes pero consume más energia. 
 * De clase **C** (Continous): Se dispone de recepción de paquetes continua, el dispositivo solo deja de escuchar en el momento que envía alguna información.
 
 _*En los ejemplos solo se tiene soporte para nodos de clase A y B (soportados por la libreria utilizada), pero solo se implementa el de tipo A._
@@ -55,13 +59,21 @@ _*En los ejemplos solo se tiene soporte para nodos de clase A y B (soportados po
 
 Si se hace uso de la banda de frecuencia libre en Europa (868Mhz) se han de tener en cuenta algunas limitaciones:
 * La potencia máxima de emisión es 25 mW (a priori no es un problema, los dispositivos no suelen llegar a tanto).
-* Y lo que es más importante: **La regla del 1%**. Esta regla indica que no podemos transmitir más que el 1% del tiempo, es decir, si enviar un paquete nos lleva 100ms tendremos que esperar 900ms para enviar el siguiente.
+* Y lo que es más importante: **La regla del 1%**. Esta regla indica que no podemos transmitir más que el 1% del tiempo, es decir, si enviar un paquete nos lleva 10ms tendremos que esperar 900ms para enviar el siguiente.
 
 ### Sub-bandas o canales
 
 En cada banda de frecuencia existen varios canales o sub-bandas, en el caso de la Europea (868Mhz) nos encontramos con **10 canales** numerados del 0 al 9. Pero, por ejemplo en la Americana (915Mhz) podemos encontrarnos hasta 64.
 
 El envio de información a través de un canal u otro es una tarea que suelen facilitar las librerias a utilizar.
+
+### Data Rate y Spreading Factor
+
+En algunos *End-Devices* es posible modificar el *DataRate* o el *SpreadingFactor* del dispositivo.
+* El **DataRate** indica la velocidad de envío de los datos y permite manejar el Spreading Factor, se indica con un número entero entre el 0 y el 6 (ambos incluidos).
+* El **SpreadingFactor** indica el **Factor de esparcimiento**, tiene el formato SFX siendo X un número entre el 7 (minimo factor de esparcimiento) y 12 (máximo factor). **Cuanto mayor sea el SpreadingFactor más lejos podrán llegar los paquetes pero lo harán a una velocidad menor (datarate menor)**.
+
+El DataRate y el SpreadingFactor están relacionados: Un datarate de 0 indica un SF12 y un datarate de 5 indica un SF7. Todos a una frecuencia de 125kHz teniendo la siguiente excepción: un datarate de 6 indica un SF7 con 250kHz.
 
 _____________________________________
 ## Pre-requisitos 📋
@@ -92,6 +104,8 @@ _Y después subir los proyectos pertinentes a los dispositivos_
 
 Ambos dispositivos disponen de una antera LoRa conectada a ellos.
 
+**Nota**: También se incluye en el repositorio el código para un ArduinoMKR1300 (más preparada para su uso como LoRa End-Device) y los códigos para utilizar una Pysense o Pytrack como End-device.
+
 !["WiFi LoRa 32 Pinout Diagram.jpg"](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/WiFi%20LoRa%2032%20Pinout%20Diagram.jpg?raw=true)
 
 _____________________________________
@@ -108,7 +122,7 @@ Para saber más puedes acceder a la carpeta [**/LoRaMAC**](https://github.com/Ja
 # LoRaWAN
 
 Para el uso de estos ejemplos (que resultan funcionales haciendo uso de un dispositivo final Arduino y de un Gateway Pycom) se precisa de un servidor para visualizar los datos. En este ejemplo se ha abordado el uso de **The Things Network** y de **Chirpstack** (anteriormente conocido como LoRaServer).
-* **Funciona para las versiones LoRa 1.0.2 y 1.0.3.**
+* **Funciona para las versiones LoRa 1.0.2 y 1.0.3.** (para dispositivos comerciales consultar en la documentación la versíon de LoRa soportada).
 
 Para saber más puedes acceder a la carpeta [**/LoRaWAN**](https://github.com/Javieral95/Getting_Started_With_LoRa/blob/main/LoRaWAN) y después seguir consultando esta documentación.
 
@@ -172,7 +186,7 @@ function Decoder(bytes, port) {
 
 #### **Nota:**
 
-Fijese en que todas las direcciones hexadecimales de The Things Network se encuentran en mayusculas, es importante a la hora de programar los dispositivos.
+Fijese en que todas las direcciones hexadecimales de The Things Network se encuentran en mayusculas, no es importante a la hora de programar los dispositivos pero se han sufrido errores en versiones pasadas.
 
 ### Chirpstack (LoRa Server)
 
@@ -229,8 +243,7 @@ function Decode(fPort, bytes) {
 
 #### **Nota:**
 
-Fijese en que todas las direcciones hexadecimales de Chirpstack se encuentran en minusculas, es importante a la hora de programar los dispositivos.
-
+Fijese en que todas las direcciones hexadecimales de Chirpstack se encuentran en minusculas, , no es importante a la hora de programar los dispositivos pero se han sufrido errores en versiones pasadas.
 _____________________________________
 
 ## Lanzar servidor Chirpstack privado en local
@@ -289,7 +302,7 @@ Comenzemos a añadir la configuración básica:
   *  Indicamos el nombre que queramos (una buena práctica es indicar OTAA en él).
   *  Seleccionamos el Network-server creado previamente y una versión de LoRaWAN MAC igual a 1.0.2 o 1.0.3.
   *  Parametros regionales de tipo A.
-  *  Algoritmo ADR por defecto, Max EIRP y Uplink Interval puede mantenerse en 0.
+  *  Algoritmo ADR (confirmación de paquetes) por defecto, Max EIRP y Uplink Interval puede mantenerse en 0.
   *  En la pestaña Join (OTAA / ABP) habilitamos el check _Device supports OTAA_
 * Gateway-Profile: No es necesario definir uno pues el Gateway no precisa de ello, pero podemos crearlo sin problema y después asignarlo.
   * Se define el tiempo de cada intervalo en el que el Gateway envia su información al servidor.
@@ -322,9 +335,9 @@ En el archivo Config se encuentra todo lo necesario para personalizar el gateway
   * Si has configurado un servidor privado de ChirpStack, deberás indicar la IP (sin puerto) Network-Server en la variable _SERVER_.
 
 ```
-WIFI_MAC = ubinascii.hexlify(machine.unique_id()) #Debería pasarse a mayusculas para TTS
+WIFI_MAC = ubinascii.hexlify(machine.unique_id()) #.toUpper() para TTS
 SERVER = 'loraserver.pycom.io' #(or url of your server)
-GATEWAY_ID = WIFI_MAC[:6] + "ffff" + WIFI_MAC[6:12] #Minusculas: Por ser Chirpstack
+GATEWAY_ID = WIFI_MAC[:6] + "ffff" + WIFI_MAC[6:12] #Minusculas: Chirpstack
 ```
 * El puerto puede mantenerse en _1700_, es el que usan ambos servicios.
 * Tras ello, se configura el servidor para el reloj, la red WiFi (junto con el Timeout para determinar el error) como la frecuencia de trabajo (en este caso la europea: 865Mhz).
@@ -420,7 +433,6 @@ A continuación el ejemplo en Chirpstack:
 static const u1_t PROGMEM APPEUI[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 static const u1_t PROGMEM DEVEUI[8] = {0x7b, 0x6b, 0xff, 0x2c, 0x7b, 0x2c, 0x19, 0x5a};
 static const u1_t PROGMEM APPKEY[16] = {0xbd, 0x21, 0x5a, 0x82, 0xb2, 0xf7, 0x92, 0xf3, 0xc7, 0xcb, 0xb2, 0x88, 0xc7, 0x55, 0x33, 0xe7};
-//Observar que esta en minusculas, en TTS se usarian mayusculas.
 ```
 
 ### Información a enviar
@@ -822,14 +834,14 @@ _____________________________________
 
 Como bien se sabe, la tasa de transferencia de LoRA es muy baja, lo que provoca una gran perdida de paquetes y una enorme latencia cuando se envía información:
 * En estos ejemplos se envia cada minuto y se visualiza esta perdida, aproximadamente solo llegan al Gateway uno de cada diez paquetes que el nodo envía)
-* Forzar a utilizar una única frecuencia y un único canal mitiga considerablemente la perdida de paquetes pero a coste de perder posible disponibilidad y de romper la regla del 1%.
-* Es altamente posible, por tanto, que trabajando con Gateways comerciales este problema se vea solucionado.
+* **Forzar** a utilizar una **única frecuencia** y un **único canal mitiga considerablemente la perdida de paquetes** pero a coste de perder posible disponibilidad y de romper la regla del 1%.
+* Si se trabaja con Gateways comerciales este problema se soluciona y no hay apenas perdida de paquetes.
 
 Algunos expertos indican que es necesario cierta distancia entre los dispositivos (30m y preferiblemente algún obstaculo entre ellos) para que la comunicación sea más fluida. No ha sido probado y solo se ha lanzado con las dos tarjetas en un extremo cada una de un piso.
 
-Por otro lado se hace uso de versiones antiguas de LoRaWAN (1.0.2 y 1.0.3) que tienen problemas de seguridad que se solventan en parte en las siguientes versiones (1.0.4 y 1.1.0), pero no se dispone de librerias para trabajar con ellas.
+Por otro lado se hace uso de versiones antiguas de LoRaWAN (1.0.2 y 1.0.3) que tienen problemas de seguridad que se solventan en parte en las siguientes versiones (1.0.4 y 1.1.0, esta última también implementa re-conectividad en caso de desconectarse de la red LoRaWAN), pero no se dispone de librerias para trabajar con ellas.
 
-Esto no quita que esta técnología pueda _pegar fuerte_ debido a no depender de proveedores externos (de comunicaciones y electricidad), siendo una opción ecónomica y muy llamativa para utilizar en proyectos IoT de grandes ciudades o entornos rurales.
+Esto no quita que esta técnología pueda ser muy interesante y útil en el futuro debido a no depender de proveedores externos (de comunicaciones y electricidad), siendo una opción ecónomica y muy llamativa para utilizar en proyectos IoT de grandes ciudades o entornos rurales.
 
 # Fin
 ## Autores ✒️
