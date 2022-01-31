@@ -10,12 +10,13 @@ import machine
 import ubinascii
 from network import LoRa
 
-lora = LoRa(mode=LoRa.LORAWAN, region=LoRa.EU868)
+##### INIT LORA OBJECT #####
+lora = LoRa(mode=LoRa.LORAWAN, device_class = LoRa.CLASS_A, region=LoRa.EU868)
 
 #### CHIRPSTARK SETTINGS #####
 LORA_MAC = ubinascii.hexlify(LoRa().mac()).upper()
 
-CONFIRM_MESSAGES = False # Adr
+CONFIRM_MESSAGES = False #adr
 
 # OTAA
 APP_KEY = ubinascii.unhexlify('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX') # Copy from Chirpstack

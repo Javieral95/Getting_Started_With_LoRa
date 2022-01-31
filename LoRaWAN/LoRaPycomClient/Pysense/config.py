@@ -13,7 +13,7 @@ from network import LoRa
 #### CHIRPSTARK SETTINGS #####
 LORA_MAC = ubinascii.hexlify(LoRa().mac()).upper()
 
-CONFIRM_MESSAGES = False # Adr
+CONFIRM_MESSAGES = False #adr
 
 # OTAA
 APP_KEY = ubinascii.unhexlify('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX') # Copy from Chirpstack
@@ -38,9 +38,6 @@ WLAN_TIMEOUT_MS = 180000
 # To Change Spreading Factor you can Change DataRate in the following line (values 0 to 6, less data rate = more Spreading factor)
 LORA_NODE_DR = 5 # 5 (6 using 250Khz) for SF7, 4 for SF6... all using 125Khz
 ###
-
-##### INIT LORA OBJECT #####
-lora = LoRa(mode=LoRa.LORAWAN, device_class = LoRa.CLASS_A, region=LoRa.EU868)
 
 # --- Functions ---
 def get_dev_eui():

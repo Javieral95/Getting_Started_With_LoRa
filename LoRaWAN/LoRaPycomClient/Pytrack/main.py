@@ -24,6 +24,7 @@ import config
 #=======================
 #===== CONSTANTS =======
 #=======================
+lora = config.lora
 LOOP_INTERVAL = 10
 WLAN = WLAN(mode=WLAN.STA)
 
@@ -90,46 +91,67 @@ def init_wifi():
     print("\nWiFi connected succesfully")
 
 def init_lora():
-    print("-- Initializing LoRaWAN (Client) --")
-    lora = LoRa(mode=LoRa.LORAWAN, region=LoRa.EU868)
-    lora.join(activation=LoRa.OTAA, auth=(config.DEV_EUI,config.APP_EUI, config.APP_KEY), timeout=0)
+    lora.nvram_restore()
 
-    # wait until the module has joined the network
-    while not lora.has_joined():
-        pycom.rgbled(0xFF00FF)
-        time.sleep(1.5)
-        pycom.rgbled(0x000000)
-        time.sleep(1)
-        print(".", end = '')
-    pycom.rgbled(0x000000)
+    if not lora.has_joined():
+        print("-- Initializing LoRaWAN (Client) --")
+        lora.join(activation=LoRa.OTAA, auth=(config.DEV_EUI,config.APP_EUI, config.APP_KEY), timeout=0)
 
-    print("\nLoRa connected and authenticated succesfully")
+        # wait until the module has joined the network
+        while not lora.has_joined():
+            pycom.rgbled(0xFF00FF)
+            time.sleep(1.5)
+            pycom.rgbled(0x000000)
+            time.sleep(1)
+            print(".", end = '')
+            pycom.rgbled(0x000000)
+            print("\nLoRa connected and authenticated succesfully")
+    else:
+        print("-- LoRaWAN (Client) already join !")
 
+    print("Initializing socket")
     sckt = socket.socket(socket.AF_LORA, socket.SOCK_RAW)
+    #Config DataRate
     sckt.setsockopt(socket.SOL_LORA, socket.SO_DR, config.LORA_NODE_DR)
+    #Config Confirmed or Non-Confirmed type of messages
+    sckt.setsockopt(socket.SOL_LORA, socket.SO_CONFIRMED, config.CONFIRM_MESSAGES)
 
     return lora, sckt
 
 #Data
-def post_lora_data(sckt, acceleration, pitch, roll, coord):
+def send_uplink(sckt, acceleration, pitch, roll, coord):
     #Acceleration wont send
     payload = "{}${}${}".format(roll, pitch, coord)
     print("Sending: {}".format(payload))
     sckt.setblocking(True)
     sckt.send(payload)
     sckt.setblocking(False)
+    # store in flush to judge next time
+    lora.nvram_save()
     # get any data received (if any...)
     if(config.CONFIRM_MESSAGES):
-        print("->Response: ")
-        data = sckt.recv(64)
-        print(data)
+        time.sleep(1)
+        receive_downlink(sckt)
+
+def receive_downlink(sckt):
+    print("->Reading downlink . . . ")
+    downlink_message = sckt.recv(64)
+
+    if downlink_message == b'':
+        print("There is no downlink :(")
+    else:
+        downlink_payload = downlink_message.decode('ascii') # string form
+        print("Downlink message: " + downlink_payload)
+        pycom.rgbled(0x00FF00) # green
+        time.sleep(1)
+        pycom.rgbled(0x000000) # green
 
 #Others
 def wait_next_loop():
     pycom.rgbled(0xFFFFFF)
-    time.sleep(LOOP_INTERVAL / 2)
+    time.sleep(1)
     pycom.rgbled(0x000000)
-    time.sleep(LOOP_INTERVAL / 2)
+    machine.deepsleep(LOOP_INTERVAL)
 
 
 #=======================
@@ -153,10 +175,10 @@ def main():
         acceleration, pitch, roll = take_acc_values(acc=acc)
         coord = take_coordenates(l76)
 
-        post_lora_data(sckt, acceleration, pitch, roll, coord)
+        send_uplink(sckt, acceleration, pitch, roll, coord)
 
-        wait_next_loop()
         print_separator()
+        wait_next_loop()
     #End while
 #End Main
 
